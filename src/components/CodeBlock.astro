@@ -1,0 +1,27 @@
+---
+import { highlightShell } from "../lib/highlight";
+
+// `lines` with t="cmd" go through the shell highlighter; "out" is plain
+// output; "hit" marks the line a reader should look at.
+type Line = { t: "cmd" | "out" | "hit"; s: string };
+
+interface Props {
+  label: string;
+  lines: Line[];
+  /** Text the copy button puts on the clipboard. Omit for output-only panels. */
+  copy?: string;
+}
+
+const { label, lines, copy } = Astro.props;
+---
+
+<figure class="code">
+  <figcaption class="code__head">
+    <span>{label}</span>
+    {copy && (
+      <button class="code__copy" type="button" data-copy={copy}>Copy</button>
+    )}
+  </figcaption>
+  {/* Keep <pre> contents on one line: template whitespace renders as blank lines. */}
+  <pre>{lines.map((line) => line.t === "cmd" ? <span>{highlightShell(line.s).map((tk) => tk.cls ? <span class={tk.cls}>{tk.text}</span> : tk.text)}{"\n"}</span> : <span class={line.t === "hit" ? "tk-hit" : "tk-out"}>{line.s + "\n"}</span>)}</pre>
+</figure>

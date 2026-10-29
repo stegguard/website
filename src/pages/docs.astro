@@ -1,12 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
 import { readDoc, parseMarkdownTable, extractCodeBlock } from "../lib/markdown";
 
+const installCmd = "pip install git+https://github.com/stegguard/stegguard";
+
 const commands = [
-  { name: "stegguard detect", detail: "Scans files or directories for hidden content.", where: "exit 0/1/2" },
-  { name: "stegguard decode", detail: "Pulls out hidden payloads it recognizes in text, without changing the input.", where: "exit 0/2" },
-  { name: "stegguard sanitize", detail: "Writes a cleaned copy and lists every change it made.", where: "exit 0/2" },
-  { name: "stegguard watermark", detail: "Looks for watermark, fingerprint and provenance evidence, including C2PA.", where: "exit 0/2" },
+  { name: "stegguard detect", exits: "0 / 1 / 2", detail: "Scans files or directories for hidden content." },
+  { name: "stegguard decode", exits: "0 / 2", detail: "Pulls out hidden payloads it recognizes in text, without changing the input." },
+  { name: "stegguard sanitize", exits: "0 / 2", detail: "Writes a cleaned copy and lists every change it made." },
+  { name: "stegguard watermark", exits: "0 / 2", detail: "Looks for watermark, fingerprint and provenance evidence, including C2PA." },
 ];
 
 const exitCodes = [
@@ -29,86 +32,135 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
   python: r["Python"],
   status: r["Current evidence"],
 }));
+
+const toc = [
+  { id: "install", label: "Install" },
+  { id: "commands", label: "Commands" },
+  { id: "exit-codes", label: "Exit codes" },
+  { id: "limits", label: "Resource limits" },
+  { id: "platforms", label: "Platform support" },
+  { id: "more", label: "More in the repo" },
+];
 ---
 
 <Layout title="Docs · StegGuard" description="StegGuard CLI reference: commands, exit codes, resource limits and platform support.">
-  <main>
-    <section class="docs-hero">
-      <h1>Commands, exit codes and limits.</h1>
-      <p>
+  <div class="docs wrap">
+    <main id="content" class="docs__main">
+      <p class="crumb"><a href="/">StegGuard</a> <span aria-hidden="true">/</span> CLI reference</p>
+      <h1>Commands, exit codes and limits</h1>
+      <p class="lede">
         The short reference. Detection categories, how sanitizing works and the report schema
-        are covered in the <a href="https://github.com/stegguard/stegguard/tree/main/docs">full docs on GitHub</a>.
+        live in the <a href="https://github.com/stegguard/stegguard/tree/main/docs">docs folder on GitHub</a>.
       </p>
-    </section>
 
-    <section class="spec-section">
-      <h2>Commands</h2>
-      <table class="spec-sheet tnum">
-        <tbody>
-          {commands.map((c) => (
-            <tr>
-              <th><code class="font-mono">{c.name}</code></th>
-              <td>{c.detail}</td>
-              <td class="muted">{c.where}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+      <details class="toc-inline">
+        <summary>On this page</summary>
+        <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+      </details>
 
-    <section class="spec-section">
-      <h2>Exit codes</h2>
-      <p class="docs-lede">Command names, long option names, JSON field meanings, and exit codes are public. They only change in a major release.</p>
-      <table class="spec-sheet tnum">
-        <tbody>
-          {exitCodes.map((e) => (
-            <tr>
-              <th><code class="font-mono">{e.code}</code></th>
-              <td>{e.meaning}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+      <aside class="callout callout--warn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"></path><path d="M12 10v5M12 18h.01"></path></svg>
+        <p><strong>Alpha software.</strong> Treat a finding as evidence to check by hand, and a clean result as "nothing this version recognizes", not proof the file is safe.</p>
+      </aside>
 
-    <section class="spec-section">
-      <h2>Resource limits</h2>
-      <p class="docs-lede">StegGuard treats every file it scans as untrusted. Each limit can be set with a <code class="font-mono">ScanLimits</code> object or the matching CLI flag.</p>
-      <table class="spec-sheet tnum">
-        <tbody>
-          {limits.map((l) => (
-            <tr>
-              <th><code class="font-mono">{l.name}</code></th>
-              <td>{l.purpose}</td>
-              <td class="muted">{l.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <pre class="docs-code"><code>{limitsExample}</code></pre>
-    </section>
+      <h2 id="install"><a class="anchor" href="#install">Install</a></h2>
+      <p>Python 3.12 or newer. There is no PyPI release yet, so install from the repo:</p>
+      <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
 
-    <section class="spec-section">
-      <h2>Platform support</h2>
-      <p class="docs-lede">The core is pure Python and targets CPython 3.12 to 3.14. Development happens on Linux x86-64. Other architectures have not been verified yet.</p>
-      <table class="spec-sheet tnum">
-        <tbody>
-          {platforms.map((p) => (
-            <tr>
-              <th>{p.platform}</th>
-              <td class="muted">{p.python}</td>
-              <td>{p.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+      <h2 id="commands"><a class="anchor" href="#commands">Commands</a></h2>
+      <ul class="fields">
+        {commands.map((c) => (
+          <li>
+            <p class="fields__sig"><code>{c.name}</code> <span class="fields__meta">exits {c.exits}</span></p>
+            <p>{c.detail}</p>
+          </li>
+        ))}
+      </ul>
 
-    <section class="closing">
-      <div>
-        <p>The compatibility policy, detection-quality notes and report schema are in the repo.</p>
-        <a class="cta-link" href="https://github.com/stegguard/stegguard/tree/main/docs">Browse the docs on GitHub →</a>
+      <h2 id="exit-codes"><a class="anchor" href="#exit-codes">Exit codes</a></h2>
+      <aside class="callout callout--note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
+        <p>Command names, long option names, JSON field meanings and exit codes are public. They only change in a major release.</p>
+      </aside>
+      <div class="table-scroll">
+        <table class="spec spec--narrow">
+          <thead><tr><th scope="col">Code</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            {exitCodes.map((e) => (
+              <tr><th scope="row"><code>{e.code}</code></th><td>{e.meaning}</td></tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </section>
-  </main>
+
+      <h2 id="limits"><a class="anchor" href="#limits">Resource limits</a></h2>
+      <p>StegGuard treats every file it scans as untrusted. Each limit can be set with a <code>ScanLimits</code> object or the matching CLI flag. Hitting a limit is not a clean result: the scan records an error and exits with <code>2</code>.</p>
+      <div class="table-scroll">
+        <table class="spec">
+          <thead><tr><th scope="col">Limit</th><th scope="col">Default</th><th scope="col">Purpose</th></tr></thead>
+          <tbody>
+            {limits.map((l) => (
+              <tr><th scope="row"><code>{l.name}</code></th><td class="num">{l.value}</td><td>{l.purpose}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <CodeBlock
+        label="shell"
+        copy={limitsExample}
+        lines={limitsExample.split("\n").map((s) => ({ t: "cmd" as const, s }))}
+      />
+
+      <h2 id="platforms"><a class="anchor" href="#platforms">Platform support</a></h2>
+      <p>The core is pure Python and targets CPython 3.12 to 3.14. Development happens on Linux x86-64. Other architectures have not been verified yet.</p>
+      <div class="table-scroll">
+        <table class="spec">
+          <thead><tr><th scope="col">Platform</th><th scope="col">Python</th><th scope="col">Current evidence</th></tr></thead>
+          <tbody>
+            {platforms.map((p) => (
+              <tr><th scope="row">{p.platform}</th><td class="num">{p.python}</td><td>{p.status}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="more"><a class="anchor" href="#more">More in the repo</a></h2>
+      <div class="cards">
+        <a class="card" href="https://github.com/stegguard/stegguard/blob/main/docs/compatibility.md">
+          <span class="card__title">Compatibility policy</span>
+          <span class="card__body">What counts as a breaking change in the Python API, CLI and report schemas. Deprecations last at least one minor release.</span>
+        </a>
+        <a class="card" href="https://github.com/stegguard/stegguard/blob/main/docs/detection-quality.md">
+          <span class="card__title">Detection quality</span>
+          <span class="card__body">How each detector is measured against a versioned corpus, and why a clean scan is not proof a file is safe.</span>
+        </a>
+      </div>
+    </main>
+
+    <nav class="toc" aria-label="On this page">
+      <p class="toc__label">On this page</p>
+      <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+    </nav>
+  </div>
+
+  <script>
+    // Highlight the TOC entry for the section in view.
+    const links = new Map(
+      Array.from(document.querySelectorAll<HTMLAnchorElement>(".toc a")).map((a) => [a.hash.slice(1), a]),
+    );
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute("aria-current"));
+          links.get(entry.target.id)?.setAttribute("aria-current", "true");
+        }
+      },
+      { rootMargin: "-15% 0px -70% 0px" },
+    );
+    links.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  </script>
 </Layout>
