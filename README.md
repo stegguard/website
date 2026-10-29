@@ -43,11 +43,11 @@ The Resource limits and Platform support tables (and the limits example command)
 One-time setup in the site repo:
 
 1. **Settings → Pages → Source:** GitHub Actions.
-2. **Settings → Secrets and variables → Actions → Variables:** add `SITE_URL` (e.g. `https://stegguard.com`). It drives canonical and Open Graph URLs.
-3. **Settings → Pages → Custom domain:** enter the domain, then tick *Enforce HTTPS* once the certificate is issued.
+2. **Settings → Secrets and variables → Actions → Variables:** optionally add `SITE_URL` to override the default `https://stegguard.com`. It drives canonical and Open Graph URLs.
+3. **Settings → Pages → Custom domain:** enter `stegguard.com`, then tick *Enforce HTTPS* once the certificate is issued.
 4. **DNS** (at your registrar, or in Vercel if Vercel manages the domain's DNS):
    - apex `@`: `A` records `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - `www`: `CNAME` to `<user-or-org>.github.io`
+   - `www`: `CNAME` to `stegguard.github.io.`
 
 If `stegguard/stegguard` is private, add a read-only token as the `OSS_REPO_TOKEN` secret and uncomment the `token:` line in the workflow.
 

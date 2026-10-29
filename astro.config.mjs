@@ -5,9 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  // Production URL for canonical/og tags. CI sets SITE_URL from the repo's
-  // Actions variable; the fallback is a placeholder until the domain is final.
-  site: process.env.SITE_URL || 'https://stegguard.dev',
+  // Production URL for canonical/og tags. CI can override it with the repo's
+  // SITE_URL Actions variable.
+  site: process.env.SITE_URL || 'https://stegguard.com',
   vite: {
     plugins: [tailwindcss()]
   }
