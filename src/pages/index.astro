@@ -1,50 +1,53 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import { segment, encodeZeroWidth } from "../lib/reveal";
 
 // Single source for the install command (markup + clipboard). Not on PyPI yet.
 const installCmd = "pip install git+https://github.com/stegguard/stegguard";
 
-// Lines are trimmed excerpts of real CLI output; "…" marks elided output.
-// Each block is a few lines lifted from a real run on a file hiding "hi" in
-// 16 zero-width characters plus one right-to-left override.
-const frames = [
+// The hero specimen is the same report.md the workflow below runs against:
+// "hi" in 16 zero-width characters plus one right-to-left override.
+const specimen = segment(
+  `Q3 numbers are final.${encodeZeroWidth("hi")} Please summarize them for the ‮board.`,
+);
+
+// Lines are trimmed excerpts of real CLI output from a run on that file.
+const steps = [
   {
-    kicker: "Detect",
+    verb: "Detect",
     title: "Point it at a file or a whole repo.",
     caption: "Runs on the standard library, with no network calls. It exits with 1 when something is flagged, so CI can fail the build.",
-    label: "$ stegguard detect",
     lines: [
       { t: "cmd", s: "$ stegguard detect report.md" },
-      { t: "plain", s: "  • 16 zero-width characters found" },
-      { t: "plain", s: "  • 1 suspicious control character(s) found" },
-      { t: "accent", s: "⚠ 1/1 file(s) flagged" },
+      { t: "out", s: "  • 16 zero-width characters found" },
+      { t: "out", s: "  • 1 suspicious control character(s) found" },
+      { t: "hit", s: "⚠ 1/1 file(s) flagged" },
     ],
   },
   {
-    kicker: "Decode",
+    verb: "Decode",
     title: "Read the hidden message without touching the file.",
     caption: "The result is JSON, with a confidence score for each channel.",
-    label: "$ stegguard decode",
     lines: [
       { t: "cmd", s: "$ stegguard decode report.md" },
-      { t: "accent", s: '  "decoded": "hi",' },
-      { t: "plain", s: '  "confidence": 0.9,' },
-      { t: "plain", s: '  "occurrences": 16' },
+      { t: "hit", s: '  "decoded": "hi",' },
+      { t: "out", s: '  "confidence": 0.9,' },
+      { t: "out", s: '  "occurrences": 16' },
     ],
   },
   {
-    kicker: "Sanitize",
+    verb: "Sanitize",
     title: "Get a clean copy and a record of what changed.",
     caption: "The copy goes to report.sanitized.md by default. Overwriting the original takes --in-place and --confirm together.",
-    label: "$ stegguard sanitize",
     lines: [
       { t: "cmd", s: "$ stegguard sanitize report.md" },
-      { t: "plain", s: '  "zero_width_removed": 16,' },
-      { t: "plain", s: '  "bidi_removed": 1,' },
-      { t: "accent", s: '  "original_preserved": true' },
+      { t: "out", s: '  "zero_width_removed": 16,' },
+      { t: "out", s: '  "bidi_removed": 1,' },
+      { t: "hit", s: '  "original_preserved": true' },
     ],
   },
-];
+] as const;
 
 const specs = [
   {
@@ -70,96 +73,83 @@ const specs = [
 ];
 
 const useCases = [
-  {
-    label: "CI gate",
-    body: "Fail a pull request that adds BIDI overrides or homoglyphs to source files.",
-  },
-  {
-    label: "LLM input checks",
-    body: "Look for zero-width prompt injection in pasted text and scraped pages before they reach a model.",
-  },
-  {
-    label: "Pre-publish checks",
-    body: "Scan DOCX, PPTX and PDF files for hidden content before you send them out.",
-  },
-  {
-    label: "Provenance audits",
-    body: "Validate C2PA Content Credentials and look for watermark signals before you trust an image or audio file.",
-  },
+  { label: "CI gate", body: "Fail a pull request that adds BIDI overrides or homoglyphs to source files." },
+  { label: "LLM input checks", body: "Look for zero-width prompt injection in pasted text and scraped pages before they reach a model." },
+  { label: "Pre-publish checks", body: "Scan DOCX, PPTX and PDF files for hidden content before you send them out." },
+  { label: "Provenance audits", body: "Validate C2PA Content Credentials and look for watermark signals before you trust an image or audio file." },
 ];
 ---
 
 <Layout>
-  <main>
-    <section class="hero">
-      <div>
-        <p class="hero__badge"><span class="dot"></span>alpha · v0.3.0</p>
+  <main id="content">
+    <section class="hero wrap">
+      <div class="hero__copy">
+        <p class="eyebrow">Alpha · v0.3.0 · Apache-2.0</p>
         <h1>Find what's hiding in plain sight.</h1>
-        <p>
+        <p class="lede">
           StegGuard scans files for zero-width characters, homoglyphs, whitespace channels and
           watermark signals. If it finds a hidden message it can decode it, and it writes a clean
           copy without touching your original. Python standard library only, offline by default.
         </p>
-        <div class="hero__actions">
-          <div class="install-chip" id="install-chip" data-install={installCmd}>
-            <span>{installCmd}</span>
-            <button id="install-copy" aria-label="Copy install command" data-state="idle">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <rect x="9" y="9" width="11" height="11" rx="1.5"></rect>
-                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path>
-              </svg>
-            </button>
-          </div>
-          <a class="nav__link nowrap" href="/docs">Read the docs</a>
-        </div>
+        <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
+        <p class="hero__more"><a href="/docs">Commands, exit codes and limits</a></p>
       </div>
-      <figure class="code-card">
-        <div class="code-card__label">leaked-prompt.md</div>
-        <pre id="hero-type"><span class="tok-cmd type-line">$ stegguard detect leaked-prompt.md<span class="type-caret"></span></span></pre>
+
+      <figure class="specimen" id="specimen" data-revealed="false">
+        <figcaption class="specimen__head">
+          <span class="specimen__file">report.md, line 1</span>
+          <button class="specimen__toggle" type="button" aria-pressed="false" aria-controls="specimen-text">
+            Show hidden characters
+          </button>
+        </figcaption>
+        <p class="specimen__text" id="specimen-text">{specimen.map((s) => s.kind === "text" ? s.text : <mark class={`hid hid--${s.kind}`}>{s.label}</mark>)}</p>
+        <p class="specimen__note" aria-live="polite">
+          <span class="specimen__before">Looks like an ordinary sentence. Copy it into a model and it carries more than it shows.</span>
+          <span class="specimen__after">Sixteen zero-width characters spell <code>hi</code> in binary, and a right-to-left override flips how the last word renders.</span>
+        </p>
       </figure>
     </section>
 
-    <section class="workbench" id="how-it-works">
-      <h2>One workflow instead of five one-off tools.</h2>
-      <p>Detect, decode, then sanitize a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
+    <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">
+      <h2 id="steps-h">One workflow instead of five one-off tools.</h2>
+      <p class="section-lede">Detect, decode, then sanitize a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
+      <ol class="steps__list">
+        {steps.map((step, i) => (
+          <li class="step" id={step.verb.toLowerCase()}>
+            <div class="step__text">
+              <p class="step__num">0{i + 1} · {step.verb}</p>
+              <h3>{step.title}</h3>
+              <p>{step.caption.split(/(--[a-z-]+|report\.sanitized\.md)/).map((part, j) => j % 2 ? <code>{part}</code> : part)}</p>
+            </div>
+            <CodeBlock label={`stegguard ${step.verb.toLowerCase()}`} lines={[...step.lines]} />
+          </li>
+        ))}
+      </ol>
+    </section>
 
-      <div class="frames">
-      {frames.map((frame) => (
-        <div class="frame reveal" id={frame.kicker.toLowerCase()}>
-          <div>
-            <h3 class="frame__title"><span class="frame__verb">{frame.kicker}.</span> {frame.title}</h3>
-            <p class="frame__caption">{frame.caption}</p>
-          </div>
-          <figure class="code-card frame__code">
-            <div class="code-card__label">{frame.label}</div>
-            {/* Keep <pre> contents on one line: template whitespace renders as blank lines. */}
-            <pre>{frame.lines.map((line) => <span class={line.t === "accent" ? "tok-accent" : line.t === "muted" ? "tok-muted" : "tok-cmd"}>{(line.s || " ") + "\n"}</span>)}</pre>
-          </figure>
-        </div>
-      ))}
+    <section class="wrap" id="detects" aria-labelledby="detects-h">
+      <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>
+      <div class="table-scroll">
+        <table class="spec">
+          <thead>
+            <tr><th scope="col">Category</th><th scope="col">What it looks for</th><th scope="col">Where</th></tr>
+          </thead>
+          <tbody>
+            {specs.map((s) => (
+              <tr>
+                <th scope="row">{s.name}</th>
+                <td>{s.detail}</td>
+                <td class="muted">{s.where}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      <div id="cta-sentinel" aria-hidden="true"></div>
     </section>
 
-    <section class="spec-section reveal" id="detects">
-      <h2>Hidden content rarely comes in one neat format.</h2>
-      <table class="spec-sheet tnum">
-        <tbody>
-          {specs.map((s) => (
-            <tr>
-              <th>{s.name}</th>
-              <td>{s.detail}</td>
-              <td class="muted">{s.where}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-
-    <section class="usecases reveal" id="use-cases">
-      <h2>Where it fits</h2>
-      <dl>
+    <section class="wrap" id="use-cases" aria-labelledby="uses-h">
+      <h2 id="uses-h">Where it fits</h2>
+      <dl class="uses">
         {useCases.map((u) => (
           <div>
             <dt>{u.label}</dt>
@@ -169,91 +159,23 @@ const useCases = [
       </dl>
     </section>
 
-    <section class="closing reveal">
+    <section class="closing wrap">
       <div>
-        <p>Everything on this page ships in the Apache-2.0 open-source package. It is alpha software, so treat what it reports as evidence to check, not a final verdict.</p>
-        <a class="cta-link" href="/docs">Read the full docs →</a>
+        <p>Everything on this page ships in the open-source package. It is alpha software, so treat what it reports as evidence to check, not a final verdict.</p>
+        <p><a href="https://github.com/stegguard/stegguard">Read the source on GitHub</a></p>
       </div>
-      <figure class="closing__banner">
-        <img src="/images/steg_banner.png" alt="StegGuard: uncovering hidden data" width="630" height="276" loading="lazy" />
-      </figure>
+      <img src="/images/steg_banner.png" alt="StegGuard logo: a stag inside a magnifying glass held over binary digits, captioned 'Uncovering hidden data'" width="630" height="276" loading="lazy" />
     </section>
   </main>
 
-  <div class="sticky-cta" id="sticky-cta">
-    <p>Try it on your own files.</p>
-    <div class="install-chip" style="background: transparent; padding: 0;">
-      <button
-        class="btn btn--accent nowrap"
-        id="sticky-copy"
-        type="button"
-        data-state="idle"
-      >
-        {installCmd}
-      </button>
-    </div>
-  </div>
-
   <script>
-    // Hero type-in: plays once, then stays static. Skipped for reduced motion.
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const typeLine = document.querySelector<HTMLElement>("#hero-type .type-line");
-    if (typeLine && !prefersReduced) {
-      const full = "$ stegguard detect leaked-prompt.md";
-      const caret = typeLine.querySelector(".type-caret");
-      typeLine.textContent = "";
-      if (caret) typeLine.appendChild(caret);
-      let i = 0;
-      const tick = () => {
-        if (i <= full.length) {
-          typeLine!.textContent = full.slice(0, i);
-          if (caret) typeLine!.appendChild(caret);
-          i++;
-          setTimeout(tick, 22);
-        }
-      };
-      tick();
-    }
-
-    // Copy-to-clipboard: the label swap is the feedback, no toast.
-    const installCmd = document.getElementById("install-chip")?.dataset.install ?? "";
-    function wireCopy(buttonId: string, labelSetter?: (state: "idle" | "copied") => void) {
-      const btn = document.getElementById(buttonId);
-      btn?.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(installCmd);
-        } catch {
-          return;
-        }
-        btn.setAttribute("data-state", "copied");
-        btn.closest(".install-chip")?.setAttribute("data-copied", "true");
-        const original = btn.innerHTML;
-        if (labelSetter) labelSetter("copied");
-        setTimeout(() => {
-          btn.setAttribute("data-state", "idle");
-          btn.closest(".install-chip")?.removeAttribute("data-copied");
-          if (labelSetter) labelSetter("idle");
-          else btn.innerHTML = original;
-        }, 2500);
-      });
-    }
-    wireCopy("install-copy");
-    wireCopy("sticky-copy", (state) => {
-      const btn = document.getElementById("sticky-copy");
-      if (btn) btn.textContent = state === "copied" ? "Copied" : installCmd;
+    const fig = document.getElementById("specimen");
+    const btn = fig?.querySelector<HTMLButtonElement>(".specimen__toggle");
+    btn?.addEventListener("click", () => {
+      const on = fig!.dataset.revealed !== "true";
+      fig!.dataset.revealed = String(on);
+      btn.setAttribute("aria-pressed", String(on));
+      btn.textContent = on ? "Hide hidden characters" : "Show hidden characters";
     });
-
-    // Sticky CTA bar: appears once the visitor has scrolled past the three frames.
-    const sentinel = document.getElementById("cta-sentinel");
-    const stickyBar = document.getElementById("sticky-cta");
-    if (sentinel && stickyBar) {
-      const io = new IntersectionObserver(
-        ([entry]) => {
-          stickyBar.classList.toggle("is-visible", entry.isIntersecting || entry.boundingClientRect.top < 0);
-        },
-        { rootMargin: "0px 0px -60% 0px" },
-      );
-      io.observe(sentinel);
-    }
   </script>
 </Layout>

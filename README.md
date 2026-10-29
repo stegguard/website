@@ -1,6 +1,6 @@
 # StegGuard site
 
-Static marketing and docs site for [StegGuard](https://github.com/stegguard/stegguard), built with Astro and Tailwind CSS v4. Two pages: the landing page (`/`) and a short CLI reference (`/docs`).
+Static marketing and docs site for [StegGuard](https://github.com/stegguard/stegguard), built with Astro and hand-written CSS (Anthropic theme: warm paper, terracotta). Two pages: the landing page (`/`) and a short CLI reference (`/docs`).
 
 ## Requirements
 
@@ -17,16 +17,20 @@ npm install     # install dependencies
 npm run dev     # dev server at http://localhost:4321
 npm run build   # static build to ./dist
 npm run preview # serve the built site locally
+npm test        # node:test suites for src/lib
 ```
 
 ## Structure
 
 ```text
-src/layouts/Layout.astro   head/meta tags, nav, command palette, footer
-src/pages/index.astro      landing page
+src/layouts/Layout.astro   head/meta tags, theme toggle, top bar, footer, copy buttons
+src/components/CodeBlock.astro  dark code panel with header strip and copy button
+src/pages/index.astro      landing page (hero specimen reveals hidden characters)
 src/pages/docs.astro       CLI reference, limits, platform support
 src/lib/markdown.ts        markdown table / code-block parser for docs content
-src/styles/global.css      design tokens and component styles
+src/lib/reveal.ts          splits text into visible text and hidden-character runs
+src/lib/highlight.ts       minimal shell highlighter for code panels
+src/styles/global.css      theme tokens (light + dark) and component styles
 public/                    static assets (images)
 astro.config.mjs           Astro config; `site` comes from SITE_URL
 .github/workflows/         GitHub Pages deploy
