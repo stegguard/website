@@ -3,16 +3,16 @@ import Layout from "../layouts/Layout.astro";
 import { readDoc, parseMarkdownTable, extractCodeBlock } from "../lib/markdown";
 
 const commands = [
-  { name: "stegguard detect", detail: "Scans files or directories for hidden-content signals.", where: "exit 0/1/2" },
-  { name: "stegguard decode", detail: "Extracts recognized text-carried payloads without changing the input.", where: "exit 0/2" },
-  { name: "stegguard sanitize", detail: "Writes a safer copy and reports every change made.", where: "exit 0/2" },
-  { name: "stegguard watermark", detail: "Analyzes watermark, fingerprint, and provenance evidence.", where: "exit 0/2" },
+  { name: "stegguard detect", detail: "Scans files or directories for hidden content.", where: "exit 0/1/2" },
+  { name: "stegguard decode", detail: "Pulls out hidden payloads it recognizes in text, without changing the input.", where: "exit 0/2" },
+  { name: "stegguard sanitize", detail: "Writes a cleaned copy and lists every change it made.", where: "exit 0/2" },
+  { name: "stegguard watermark", detail: "Looks for watermark, fingerprint and provenance evidence, including C2PA.", where: "exit 0/2" },
 ];
 
 const exitCodes = [
-  { code: "0", meaning: "Scan completed and no flagged finding was detected." },
-  { code: "1", meaning: "Scan completed and at least one finding was detected. Only detect uses 1 for a positive result." },
-  { code: "2", meaning: "Invocation was invalid or the scan was incomplete." },
+  { code: "0", meaning: "The scan finished and nothing was flagged." },
+  { code: "1", meaning: "The scan finished and found something. Only detect uses this code." },
+  { code: "2", meaning: "Bad arguments, or the scan could not finish (for example, a resource limit was hit)." },
 ];
 
 // Resource limits and platform support are derived from the stegguard-oss docs at build time.
@@ -31,14 +31,13 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
 }));
 ---
 
-<Layout title="Docs — StegGuard" description="CLI reference, exit codes, resource limits, and platform support for StegGuard.">
+<Layout title="Docs · StegGuard" description="StegGuard CLI reference: commands, exit codes, resource limits and platform support.">
   <main>
     <section class="docs-hero">
-      <h1>Commands, contracts, and limits.</h1>
+      <h1>Commands, exit codes and limits.</h1>
       <p>
-        The short version of what's public, what's bounded, and what's verified. For the full
-        narrative — detection categories, sanitization behavior, report schema — see the
-        <a href="https://github.com/stegguard/stegguard/tree/main/docs">complete docs on GitHub</a>.
+        The short reference. Detection categories, how sanitizing works and the report schema
+        are covered in the <a href="https://github.com/stegguard/stegguard/tree/main/docs">full docs on GitHub</a>.
       </p>
     </section>
 
@@ -59,7 +58,7 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
 
     <section class="spec-section">
       <h2>Exit codes</h2>
-      <p class="docs-lede">Command names, long option names, JSON field meanings, and exit codes are public — they don't change without a major release.</p>
+      <p class="docs-lede">Command names, long option names, JSON field meanings, and exit codes are public. They only change in a major release.</p>
       <table class="spec-sheet tnum">
         <tbody>
           {exitCodes.map((e) => (
@@ -74,7 +73,7 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
 
     <section class="spec-section">
       <h2>Resource limits</h2>
-      <p class="docs-lede">StegGuard treats scanned files as untrusted. Every limit below is configurable via a <code class="font-mono">ScanLimits</code> object or the matching CLI flag.</p>
+      <p class="docs-lede">StegGuard treats every file it scans as untrusted. Each limit can be set with a <code class="font-mono">ScanLimits</code> object or the matching CLI flag.</p>
       <table class="spec-sheet tnum">
         <tbody>
           {limits.map((l) => (
@@ -91,7 +90,7 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
 
     <section class="spec-section">
       <h2>Platform support</h2>
-      <p class="docs-lede">Pure-Python core, targeting CPython 3.12 through 3.14. Linux x86-64 is the local development baseline; other architectures are unverified.</p>
+      <p class="docs-lede">The core is pure Python and targets CPython 3.12 to 3.14. Development happens on Linux x86-64. Other architectures have not been verified yet.</p>
       <table class="spec-sheet tnum">
         <tbody>
           {platforms.map((p) => (
@@ -106,8 +105,10 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
     </section>
 
     <section class="closing">
-      <p>Full compatibility policy, detection-quality notes, and the report schema live in the repo.</p>
-      <a class="cta-link" href="https://github.com/stegguard/stegguard/tree/main/docs">Browse the docs on GitHub →</a>
+      <div>
+        <p>The compatibility policy, detection-quality notes and report schema are in the repo.</p>
+        <a class="cta-link" href="https://github.com/stegguard/stegguard/tree/main/docs">Browse the docs on GitHub →</a>
+      </div>
     </section>
   </main>
 </Layout>

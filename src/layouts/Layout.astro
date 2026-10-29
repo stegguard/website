@@ -7,8 +7,8 @@ interface Props {
 }
 
 const {
-  title = "StegGuard — find what's hiding in plain sight",
-  description = "StegGuard detects invisible Unicode, homoglyphs, Trojan Source attacks, whitespace steganography, and watermark signals hidden in code, documents, images, and audio. Local-first, zero runtime dependencies.",
+  title = "StegGuard: find what's hiding in plain sight",
+  description = "StegGuard finds invisible Unicode, homoglyphs, Trojan Source overrides, whitespace channels and watermark signals in code, documents, images and audio. Python standard library only, offline by default.",
 } = Astro.props;
 
 const commands = [
@@ -128,14 +128,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
     <footer class="foot-line">
       <p>
-        © 2026 StegGuard · Apache-2.0 · alpha software, verify findings yourself ·
+        © 2026 StegGuard · Apache-2.0 · alpha software, so check what it finds ·
         <a href="https://github.com/stegguard/stegguard">GitHub</a> ·
         <a href="https://github.com/stegguard/stegguard/security/policy">Security</a>
       </p>
     </footer>
 
     <script>
-      // Theme toggle — flips whichever theme is showing and remembers the choice.
+      // Theme toggle: flips whichever theme is showing and remembers the choice.
       const themeToggle = document.getElementById("theme-toggle");
       const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const isDark = () => {
