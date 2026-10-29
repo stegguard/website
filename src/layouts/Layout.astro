@@ -1,0 +1,252 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "StegGuard — find what's hiding in plain sight",
+  description = "StegGuard detects invisible Unicode, homoglyphs, Trojan Source attacks, whitespace steganography, and watermark signals hidden in code, documents, images, and audio. Local-first, zero runtime dependencies.",
+} = Astro.props;
+
+const commands = [
+  { label: "How it works", hint: "jump", href: "/#how-it-works" },
+  { label: "What it detects", hint: "jump", href: "/#detects" },
+  { label: "Use cases", hint: "jump", href: "/#use-cases" },
+  { label: "Decode a payload", hint: "jump", href: "/#decode" },
+  { label: "Sanitize a file", hint: "jump", href: "/#sanitize" },
+  { label: "CLI reference & limits", hint: "docs", href: "/docs" },
+  { label: "View source", hint: "github.com", href: "https://github.com/stegguard/stegguard" },
+  { label: "Security policy", hint: "github.com", href: "https://github.com/stegguard/stegguard/security/policy" },
+];
+
+// Absolute URLs for social previews; Astro.site comes from astro.config.mjs.
+const ogImage = new URL("/images/steg_banner.png", Astro.site);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/images/steg_logo.png" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+    <meta name="theme-color" content="#f9fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0f0e" media="(prefers-color-scheme: dark)" />
+    <script is:inline>
+      // Apply a saved theme before first paint; no saved choice means follow the OS.
+      try {
+        const saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <header class="nav" id="nav">
+      <div class="nav__inner">
+        <a href="/" class="nav__brand">
+          <img src="/images/steg_logo.png" alt="" width="22" height="22" />
+          <span>StegGuard</span>
+        </a>
+
+        <button class="searchpill" id="searchpill" aria-label="Search (⌘K)">
+          <svg class="searchpill__ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.3-4.3"></path>
+          </svg>
+          <span class="searchpill__text">Jump to…</span>
+          <span class="searchpill__kbd"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
+
+        <nav class="nav__right" aria-label="Primary">
+          <a class="nav__link nowrap" href="/docs">Docs</a>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+            <svg class="theme-toggle__moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+            </svg>
+            <svg class="theme-toggle__sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+            </svg>
+          </button>
+          <a class="btn btn--accent nowrap" href="https://github.com/stegguard/stegguard">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="cmdk" id="cmdk" aria-hidden="true">
+      <div class="cmdk__backdrop" data-close tabindex="-1"></div>
+      <div class="cmdk__panel" role="dialog" aria-modal="true" aria-label="Jump to">
+        <div class="cmdk__field">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.3-4.3"></path>
+          </svg>
+          <input id="cmdk-input" placeholder="Jump to a section or doc…" autocomplete="off" />
+          <kbd>esc</kbd>
+        </div>
+        <div class="cmdk__results" id="cmdk-results" role="listbox">
+          {commands.map((c, i) => (
+            <a
+              class="cmdk__item"
+              class:list={{ "is-active": i === 0 }}
+              href={c.href}
+              role="option"
+              data-label={c.label.toLowerCase()}
+            >
+              <span>{c.label}</span>
+              <span class="cmdk__item-hint">{c.hint}</span>
+            </a>
+          ))}
+        </div>
+        <div class="cmdk__foot">
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+          <span><kbd>↵</kbd> open</span>
+          <span><kbd>esc</kbd> close</span>
+        </div>
+      </div>
+    </div>
+
+    <slot />
+
+    <footer class="foot-line">
+      <p>
+        © 2026 StegGuard · Apache-2.0 · alpha software, verify findings yourself ·
+        <a href="https://github.com/stegguard/stegguard">GitHub</a> ·
+        <a href="https://github.com/stegguard/stegguard/security/policy">Security</a>
+      </p>
+    </footer>
+
+    <script>
+      // Theme toggle — flips whichever theme is showing and remembers the choice.
+      const themeToggle = document.getElementById("theme-toggle");
+      const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const isDark = () => {
+        const t = document.documentElement.dataset.theme;
+        return t ? t === "dark" : darkQuery.matches;
+      };
+      const syncToggle = () => themeToggle?.setAttribute("aria-pressed", String(isDark()));
+      themeToggle?.addEventListener("click", () => {
+        const next = isDark() ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try {
+          localStorage.setItem("theme", next);
+        } catch {}
+        syncToggle();
+      });
+      darkQuery.addEventListener("change", syncToggle);
+      syncToggle();
+
+      const reveals = document.querySelectorAll<HTMLElement>(".reveal");
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.15 },
+      );
+      reveals.forEach((el) => io.observe(el));
+
+      const searchpill = document.getElementById("searchpill");
+      const cmdk = document.getElementById("cmdk");
+      const cmdkInput = document.getElementById("cmdk-input") as HTMLInputElement | null;
+      const cmdkResults = document.getElementById("cmdk-results");
+      let lastFocused: HTMLElement | null = null;
+
+      function openCmdk() {
+        if (!cmdk) return;
+        lastFocused = document.activeElement as HTMLElement;
+        cmdk.classList.add("is-open");
+        cmdk.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        cmdkInput?.focus();
+      }
+      // restoreFocus is false when navigating: refocusing the pill could scroll
+      // back to the top and undo a same-page hash jump.
+      function closeCmdk(restoreFocus = true) {
+        if (!cmdk) return;
+        cmdk.classList.remove("is-open");
+        cmdk.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        if (cmdkInput) cmdkInput.value = "";
+        filterResults("");
+        if (restoreFocus) lastFocused?.focus({ preventScroll: true });
+      }
+      function filterResults(query: string) {
+        const items = cmdkResults?.querySelectorAll<HTMLElement>(".cmdk__item");
+        if (!items) return;
+        let firstVisible: HTMLElement | null = null;
+        items.forEach((item) => {
+          const match = (item.dataset.label || "").includes(query.toLowerCase());
+          item.style.display = match ? "" : "none";
+          item.classList.remove("is-active");
+          if (match && !firstVisible) firstVisible = item;
+        });
+        firstVisible?.classList.add("is-active");
+      }
+      function moveActive(dir: 1 | -1) {
+        const items = Array.from(
+          cmdkResults?.querySelectorAll<HTMLElement>('.cmdk__item:not([style*="display: none"])') ?? [],
+        );
+        if (!items.length) return;
+        const currentIndex = items.findIndex((i) => i.classList.contains("is-active"));
+        const next = (currentIndex + dir + items.length) % items.length;
+        items[currentIndex]?.classList.remove("is-active");
+        items[next]?.classList.add("is-active");
+        items[next]?.scrollIntoView({ block: "nearest" });
+      }
+
+      searchpill?.addEventListener("click", openCmdk);
+      document.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", () => closeCmdk()));
+      // Activating an item (click or Enter) closes the palette and unlocks scroll
+      // before the browser follows the link, so same-page hash jumps work.
+      cmdkResults?.addEventListener("click", (e) => {
+        if ((e.target as HTMLElement).closest(".cmdk__item")) closeCmdk(false);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          cmdk?.classList.contains("is-open") ? closeCmdk() : openCmdk();
+        }
+        if (!cmdk?.classList.contains("is-open")) return;
+        if (e.key === "Escape") closeCmdk();
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          moveActive(1);
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          moveActive(-1);
+        }
+        if (e.key === "Enter") {
+          const active = cmdkResults?.querySelector<HTMLAnchorElement>(".cmdk__item.is-active");
+          active?.click();
+        }
+      });
+
+      cmdkInput?.addEventListener("input", (e) => filterResults((e.target as HTMLInputElement).value));
+    </script>
+  </body>
+</html>

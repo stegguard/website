@@ -1,0 +1,113 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { readDoc, parseMarkdownTable, extractCodeBlock } from "../lib/markdown";
+
+const commands = [
+  { name: "stegguard detect", detail: "Scans files or directories for hidden-content signals.", where: "exit 0/1/2" },
+  { name: "stegguard decode", detail: "Extracts recognized text-carried payloads without changing the input.", where: "exit 0/2" },
+  { name: "stegguard sanitize", detail: "Writes a safer copy and reports every change made.", where: "exit 0/2" },
+  { name: "stegguard watermark", detail: "Analyzes watermark, fingerprint, and provenance evidence.", where: "exit 0/2" },
+];
+
+const exitCodes = [
+  { code: "0", meaning: "Scan completed and no flagged finding was detected." },
+  { code: "1", meaning: "Scan completed and at least one finding was detected. Only detect uses 1 for a positive result." },
+  { code: "2", meaning: "Invocation was invalid or the scan was incomplete." },
+];
+
+// Resource limits and platform support are derived from the stegguard-oss docs at build time.
+const limitsMd = readDoc("resource-limits.md");
+const limits = parseMarkdownTable(limitsMd, "Resource Limits").map((r) => ({
+  name: r["Limit"],
+  value: r["Default"],
+  purpose: r["Purpose"],
+}));
+const limitsExample = extractCodeBlock(limitsMd, "bash");
+
+const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation matrix").map((r) => ({
+  platform: r["Platform"],
+  python: r["Python"],
+  status: r["Current evidence"],
+}));
+---
+
+<Layout title="Docs — StegGuard" description="CLI reference, exit codes, resource limits, and platform support for StegGuard.">
+  <main>
+    <section class="docs-hero">
+      <h1>Commands, contracts, and limits.</h1>
+      <p>
+        The short version of what's public, what's bounded, and what's verified. For the full
+        narrative — detection categories, sanitization behavior, report schema — see the
+        <a href="https://github.com/stegguard/stegguard/tree/main/docs">complete docs on GitHub</a>.
+      </p>
+    </section>
+
+    <section class="spec-section">
+      <h2>Commands</h2>
+      <table class="spec-sheet tnum">
+        <tbody>
+          {commands.map((c) => (
+            <tr>
+              <th><code class="font-mono">{c.name}</code></th>
+              <td>{c.detail}</td>
+              <td class="muted">{c.where}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="spec-section">
+      <h2>Exit codes</h2>
+      <p class="docs-lede">Command names, long option names, JSON field meanings, and exit codes are public — they don't change without a major release.</p>
+      <table class="spec-sheet tnum">
+        <tbody>
+          {exitCodes.map((e) => (
+            <tr>
+              <th><code class="font-mono">{e.code}</code></th>
+              <td>{e.meaning}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="spec-section">
+      <h2>Resource limits</h2>
+      <p class="docs-lede">StegGuard treats scanned files as untrusted. Every limit below is configurable via a <code class="font-mono">ScanLimits</code> object or the matching CLI flag.</p>
+      <table class="spec-sheet tnum">
+        <tbody>
+          {limits.map((l) => (
+            <tr>
+              <th><code class="font-mono">{l.name}</code></th>
+              <td>{l.purpose}</td>
+              <td class="muted">{l.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <pre class="docs-code"><code>{limitsExample}</code></pre>
+    </section>
+
+    <section class="spec-section">
+      <h2>Platform support</h2>
+      <p class="docs-lede">Pure-Python core, targeting CPython 3.12 through 3.14. Linux x86-64 is the local development baseline; other architectures are unverified.</p>
+      <table class="spec-sheet tnum">
+        <tbody>
+          {platforms.map((p) => (
+            <tr>
+              <th>{p.platform}</th>
+              <td class="muted">{p.python}</td>
+              <td>{p.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="closing">
+      <p>Full compatibility policy, detection-quality notes, and the report schema live in the repo.</p>
+      <a class="cta-link" href="https://github.com/stegguard/stegguard/tree/main/docs">Browse the docs on GitHub →</a>
+    </section>
+  </main>
+</Layout>

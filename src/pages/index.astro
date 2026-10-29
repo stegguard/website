@@ -1,0 +1,272 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Single source for the install command (markup + clipboard). Not on PyPI yet.
+const installCmd = "pip install git+https://github.com/stegguard/stegguard";
+
+// Lines are trimmed excerpts of real CLI output; "…" marks elided output.
+const frames = [
+  {
+    kicker: "Detect",
+    title: "Point it at a file, a folder, or a whole repo.",
+    caption: "Runs on the standard library. No network calls, no upload. Exits 1 when something is flagged.",
+    label: "$ stegguard detect",
+    lines: [
+      { t: "cmd", s: "$ stegguard detect report.md" },
+      { t: "plain", s: "" },
+      { t: "plain", s: "📄 report.md" },
+      { t: "accent", s: "  ⚠  ZERO-WIDTH CHARACTERS DETECTED — Severity: MEDIUM" },
+      { t: "muted", s: "  …" },
+      { t: "plain", s: "    Line 2  Col 7  Char #15  U+200B  Zero Width Space" },
+      { t: "plain", s: "    Line 2  Col 8  Char #16  U+200C  Zero Width Non-Joiner" },
+      { t: "muted", s: "  …" },
+      { t: "accent", s: "  ⚠ 1/1 file(s) flagged" },
+      { t: "muted", s: "exit 1" },
+    ],
+  },
+  {
+    kicker: "Decode",
+    title: "Extract the payload without touching the source.",
+    caption: "Prints a JSON report. The input file is never modified.",
+    label: "$ stegguard decode",
+    lines: [
+      { t: "cmd", s: "$ stegguard decode report.md" },
+      { t: "muted", s: "…" },
+      { t: "plain", s: '  "status": "DECODED",' },
+      { t: "plain", s: '  "zero_width": {' },
+      { t: "accent", s: '    "decoded": "hi",' },
+      { t: "plain", s: '    "confidence": 0.9,' },
+      { t: "plain", s: '    "occurrences": 16' },
+      { t: "plain", s: "  }," },
+      { t: "muted", s: "…" },
+    ],
+  },
+  {
+    kicker: "Sanitize",
+    title: "Write a clean copy and get a change report.",
+    caption: "Writes report.sanitized.md by default. Overwriting the original needs --in-place and --confirm, together.",
+    label: "$ stegguard sanitize",
+    lines: [
+      { t: "cmd", s: "$ stegguard sanitize report.md" },
+      { t: "muted", s: "…" },
+      { t: "plain", s: '  "sanitized_path": "report.sanitized.md",' },
+      { t: "muted", s: '  "sha256_before": "6c39d823…",' },
+      { t: "muted", s: '  "sha256_after": "a5d49ca2…",' },
+      { t: "plain", s: '  "changes": {' },
+      { t: "accent", s: '    "zero_width_removed": 16,' },
+      { t: "accent", s: '    "bidi_removed": 1,' },
+      { t: "muted", s: "    …" },
+      { t: "plain", s: "  }," },
+      { t: "muted", s: "…" },
+      { t: "plain", s: '  "original_preserved": true,' },
+      { t: "accent", s: '  "sanitization_status": "SANITIZED"' },
+    ],
+  },
+];
+
+const specs = [
+  {
+    name: "Text & source",
+    detail: "Zero-width Unicode, bidirectional overrides, Cyrillic/Greek homoglyphs, trailing-space and tab channels, mixed line endings.",
+    where: "any text or source file",
+  },
+  {
+    name: "Images, audio & media",
+    detail: "Pixel-level LSB anomalies (chi-square, RS, entropy, sample-pair), PNG private chunks, JPEG EXIF/XMP/IPTC, PCM audio statistics.",
+    where: "images, audio, structured media",
+  },
+  {
+    name: "Documents & containers",
+    detail: "PDF embedded files, DOCX/PPTX/XLSX/ZIP members, nested archives, SVG and HTML hidden content.",
+    where: "documents, archives",
+  },
+  {
+    name: "Watermarks & provenance",
+    detail: "Metadata, structural, and text-pattern evidence; device fingerprints; C2PA manifests validated through c2patool.",
+    where: "images, audio, video",
+  },
+];
+
+const useCases = [
+  {
+    label: "CI gate",
+    body: "Block pull requests that smuggle BIDI overrides or homoglyphs into source files before they merge.",
+  },
+  {
+    label: "LLM input sanitization",
+    body: "Catch zero-width prompt-injection payloads hiding in pasted text, scraped pages, or model output.",
+  },
+  {
+    label: "Pre-publish checks",
+    body: "Scan DOCX, PPTX, and PDF files for hidden fields and layout tricks before they go out the door.",
+  },
+  {
+    label: "Provenance audits",
+    body: "Validate C2PA Content Credentials and flag robust-watermark signals before trusting an image or audio file.",
+  },
+];
+---
+
+<Layout>
+  <main>
+    <section class="hero">
+      <div>
+        <p class="hero__badge"><span class="dot"></span>alpha · v0.3.0</p>
+        <h1>Find what's hiding in plain sight.</h1>
+        <p>
+          Invisible Unicode, homoglyphs, whitespace channels, watermark signals — StegGuard
+          finds them, decodes them, and writes a clean copy. Runs on the Python standard
+          library. Offline by default.
+        </p>
+        <div class="hero__actions">
+          <div class="install-chip" id="install-chip" data-install={installCmd}>
+            <span>{installCmd}</span>
+            <button id="install-copy" aria-label="Copy install command" data-state="idle">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="1.5"></rect>
+                <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path>
+              </svg>
+            </button>
+          </div>
+          <a class="nav__link nowrap" href="/docs">Read the docs</a>
+        </div>
+      </div>
+      <figure class="code-card">
+        <div class="code-card__label">leaked-prompt.md</div>
+        <pre id="hero-type"><span class="tok-cmd type-line">$ stegguard detect leaked-prompt.md<span class="type-caret"></span></span></pre>
+      </figure>
+    </section>
+
+    <section class="workbench" id="how-it-works">
+      <h2>One shared workflow, instead of five one-off tools.</h2>
+      <p>The original file stays untouched unless you explicitly authorize an in-place replacement.</p>
+
+      <div class="frames">
+      {frames.map((frame) => (
+        <div class="frame reveal" id={frame.kicker.toLowerCase()}>
+          <div>
+            <h3 class="frame__title"><span class="frame__verb">{frame.kicker}.</span> {frame.title}</h3>
+            <p class="frame__caption">{frame.caption}</p>
+          </div>
+          <figure class="code-card frame__code">
+            <div class="code-card__label">{frame.label}</div>
+            {/* Keep <pre> contents on one line: template whitespace renders as blank lines. */}
+            <pre>{frame.lines.map((line) => <span class={line.t === "accent" ? "tok-accent" : line.t === "muted" ? "tok-muted" : "tok-cmd"}>{(line.s || " ") + "\n"}</span>)}</pre>
+          </figure>
+        </div>
+      ))}
+      </div>
+
+      <div id="cta-sentinel" aria-hidden="true"></div>
+    </section>
+
+    <section class="spec-section reveal" id="detects">
+      <h2>Hidden content is rarely one neat payload in one neat format.</h2>
+      <table class="spec-sheet tnum">
+        <tbody>
+          {specs.map((s) => (
+            <tr>
+              <th>{s.name}</th>
+              <td>{s.detail}</td>
+              <td class="muted">{s.where}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="usecases reveal" id="use-cases">
+      <h2>Built for the moment untrusted content meets your pipeline.</h2>
+      <dl>
+        {useCases.map((u) => (
+          <div>
+            <dt>{u.label}</dt>
+            <dd>{u.body}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <section class="closing reveal">
+      <p>Everything on this page ships in the Apache-2.0 open-source package.</p>
+      <a class="cta-link" href="/docs">Read the full docs →</a>
+    </section>
+  </main>
+
+  <div class="sticky-cta" id="sticky-cta">
+    <p>Try it on your own files.</p>
+    <div class="install-chip" style="background: transparent; padding: 0;">
+      <button
+        class="btn btn--accent nowrap"
+        id="sticky-copy"
+        type="button"
+        data-state="idle"
+      >
+        {installCmd}
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Hero type-in — one-shot, then static. Respects reduced motion.
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const typeLine = document.querySelector<HTMLElement>("#hero-type .type-line");
+    if (typeLine && !prefersReduced) {
+      const full = "$ stegguard detect leaked-prompt.md";
+      const caret = typeLine.querySelector(".type-caret");
+      typeLine.textContent = "";
+      if (caret) typeLine.appendChild(caret);
+      let i = 0;
+      const tick = () => {
+        if (i <= full.length) {
+          typeLine!.textContent = full.slice(0, i);
+          if (caret) typeLine!.appendChild(caret);
+          i++;
+          setTimeout(tick, 22);
+        }
+      };
+      tick();
+    }
+
+    // Copy-to-clipboard — label swap is the feedback, no toast.
+    const installCmd = document.getElementById("install-chip")?.dataset.install ?? "";
+    function wireCopy(buttonId: string, labelSetter?: (state: "idle" | "copied") => void) {
+      const btn = document.getElementById(buttonId);
+      btn?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(installCmd);
+        } catch {
+          return;
+        }
+        btn.setAttribute("data-state", "copied");
+        btn.closest(".install-chip")?.setAttribute("data-copied", "true");
+        const original = btn.innerHTML;
+        if (labelSetter) labelSetter("copied");
+        setTimeout(() => {
+          btn.setAttribute("data-state", "idle");
+          btn.closest(".install-chip")?.removeAttribute("data-copied");
+          if (labelSetter) labelSetter("idle");
+          else btn.innerHTML = original;
+        }, 2500);
+      });
+    }
+    wireCopy("install-copy");
+    wireCopy("sticky-copy", (state) => {
+      const btn = document.getElementById("sticky-copy");
+      if (btn) btn.textContent = state === "copied" ? "Copied" : installCmd;
+    });
+
+    // Sticky CTA bar — appears once the guided tour has been read (Workbench convention).
+    const sentinel = document.getElementById("cta-sentinel");
+    const stickyBar = document.getElementById("sticky-cta");
+    if (sentinel && stickyBar) {
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          stickyBar.classList.toggle("is-visible", entry.isIntersecting || entry.boundingClientRect.top < 0);
+        },
+        { rootMargin: "0px 0px -60% 0px" },
+      );
+      io.observe(sentinel);
+    }
+  </script>
+</Layout>
