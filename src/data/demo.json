@@ -1,0 +1,72 @@
+{
+  "generated": "2026-10-29",
+  "stegguard_version": "0.3.0",
+  "total_files": 7,
+  "flagged_files": 4,
+  "files": [
+    {
+      "file": "calculator_2.py",
+      "severity": "critical",
+      "hidden": 3340,
+      "trailing_lines": 0
+    },
+    {
+      "file": "release_notes.md",
+      "severity": "critical",
+      "hidden": 296,
+      "trailing_lines": 0
+    },
+    {
+      "file": "nothing_hidden.py",
+      "severity": "medium",
+      "hidden": 6,
+      "trailing_lines": 0
+    },
+    {
+      "file": "sample.snowed_2.txt",
+      "severity": "low",
+      "hidden": 0,
+      "trailing_lines": 3
+    },
+    {
+      "file": "calculator.py",
+      "severity": "clean",
+      "hidden": 0,
+      "trailing_lines": 0
+    },
+    {
+      "file": "example.txt",
+      "severity": "clean",
+      "hidden": 0,
+      "trailing_lines": 0
+    },
+    {
+      "file": "hello.py",
+      "severity": "clean",
+      "hidden": 0,
+      "trailing_lines": 0
+    }
+  ],
+  "walkthrough": {
+    "file": "release_notes.md",
+    "line_number": 4,
+    "line": "- Faster startup on Windows.\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200c\u200c\u200b\u200c\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200b\u200b\u200c\u200b\u200c\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200b\u200b\u200c\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200c\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200c\u200c\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200b\u200c\u200b\u200c\u200c\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200c\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200b\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200c\u200c\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200b\u200b\u200c\u200b\u200c\u200c\u200c\u200c\u200b\u200b\u200c",
+    "detect_lines": [
+      "\u2022 296 zero-width characters found",
+      "\u2022 2 distinct type(s) used",
+      "\u26a0 1/1 file(s) flagged"
+    ],
+    "decoded": "rotate the staging keys before friday",
+    "confidence": 0.9,
+    "occurrences": 296,
+    "changes": {
+      "zero_width_removed": 296,
+      "bidi_removed": 0,
+      "homoglyphs_replaced": 0,
+      "trailing_whitespace_removed": 0,
+      "line_endings_normalized": 0
+    },
+    "original_preserved": true,
+    "sanitized_path": "release_notes.sanitized.md"
+  }
+}

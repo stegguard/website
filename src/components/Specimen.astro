@@ -1,0 +1,39 @@
+---
+import type { Segment } from "../lib/reveal";
+
+// A line of text whose hidden characters appear as chips on demand.
+// Slots: "before" is the caption while hidden, "after" once revealed.
+interface Props {
+  id: string;
+  label: string;
+  segments: Segment[];
+}
+
+const { id, label, segments } = Astro.props;
+---
+
+<figure class="specimen" data-revealed="false">
+  <figcaption class="specimen__head">
+    <span class="specimen__file">{label}</span>
+    <button class="specimen__toggle" type="button" aria-pressed="false" aria-controls={id}>
+      Show hidden characters
+    </button>
+  </figcaption>
+  <p class="specimen__text" id={id}>{segments.map((s) => s.kind === "text" ? s.text : <mark class={`hid hid--${s.kind}`}>{s.label}</mark>)}</p>
+  <p class="specimen__note" aria-live="polite">
+    <span class="specimen__before"><slot name="before" /></span>
+    <span class="specimen__after"><slot name="after" /></span>
+  </p>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".specimen").forEach((fig) => {
+    const btn = fig.querySelector<HTMLButtonElement>(".specimen__toggle");
+    btn?.addEventListener("click", () => {
+      const on = fig.dataset.revealed !== "true";
+      fig.dataset.revealed = String(on);
+      btn.setAttribute("aria-pressed", String(on));
+      btn.textContent = on ? "Hide hidden characters" : "Show hidden characters";
+    });
+  });
+</script>

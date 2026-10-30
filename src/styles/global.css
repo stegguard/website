@@ -23,6 +23,8 @@
 
   --note: #4A6B8A;
   --note-bg: #E9EEF2;
+  --tip: #57794C;
+  --tip-bg: #EBF0E2;
   --warn: #9A6620;
   --warn-bg: #F6EDDB;
 
@@ -53,6 +55,8 @@
 
   --note: #8FAEC9;
   --note-bg: #232A31;
+  --tip: #98BA8A;
+  --tip-bg: #242B1F;
   --warn: #D9A85C;
   --warn-bg: #322A1C;
 
@@ -184,6 +188,11 @@ code {
 }
 .top__nav a:hover, .top__nav a[aria-current="page"] { color: var(--text); }
 .top__nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+/* The footer links to the source, so the narrowest screens drop it here. */
+@media (max-width: 419px) {
+  .top__nav .top__gh { display: none; }
+  .top__nav a { padding-inline: 0.5rem; }
+}
 
 .theme {
   display: inline-grid;
@@ -511,6 +520,49 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
 }
 .toc a:hover { color: var(--text); }
 .toc a[aria-current] { color: var(--accent); border-left-color: var(--accent); }
+
+/* ---------- demo ---------- */
+
+.docs__main .specimen { margin: 1.25rem 0; }
+.docs__main h3 { margin: 2rem 0 0.5rem; }
+
+.sev {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  font: 600 0.75rem/1.4 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.sev--critical, .sev--high { color: var(--accent); background: var(--accent-soft); }
+.sev--medium { color: var(--warn); background: var(--warn-bg); }
+.sev--low { color: var(--note); background: var(--note-bg); }
+.sev--clean { color: var(--tip); background: var(--tip-bg); }
+/* On phones each file becomes a short block: name and result, note below. */
+@media (max-width: 599px) {
+  .spec--notes { min-width: 0; }
+  .spec--notes thead { display: none; }
+  .spec--notes tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.35rem 1rem;
+    padding-block: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec--notes th, .spec--notes td { padding: 0; border: 0; }
+  .spec--notes tbody th { min-width: 0; padding-left: 0; }
+  .spec--notes td:last-child { grid-column: 1 / -1; color: var(--muted); }
+}
+
+.report-frame {
+  display: block;
+  width: 100%;
+  height: min(80vh, 56rem);
+  margin: 1.25rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
 
 /* ---------- footer ---------- */
 

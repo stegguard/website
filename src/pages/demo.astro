@@ -1,0 +1,129 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import Specimen from "../components/Specimen.astro";
+import { segment } from "../lib/reveal";
+import demo from "../data/demo.json";
+import { countWord, capitalize } from "../lib/words";
+
+// Everything numeric on this page comes from src/data/demo.json, which
+// scripts/build_demo.py writes from a real StegGuard run.
+const w = demo.walkthrough;
+const n = countWord(demo.total_files);
+const samplesRepo = "https://github.com/stegguard/samples";
+
+// What each sample contains, written by hand. Keyed by file name.
+const notes: Record<string, string> = {
+  "calculator_2.py": "3,340 zero-width non-joiners after the last comment. All the same character, so there is no message in them, but they are still 3,340 characters nobody can see.",
+  "release_notes.md": "296 zero-width characters at the end of one bullet. They spell a sentence; the walkthrough above decodes it.",
+  "nothing_hidden.py": "Six zero-width characters inside a comment that claims nothing is hidden. Too few bits to make a single byte.",
+  "sample.snowed_2.txt": "Runs of trailing whitespace on all three lines (50, 43 and 35 characters), the pattern SNOW-style hiding leaves.",
+  "calculator.py": "Control file. The same calculator without the payload.",
+  "hello.py": "Control file. Two lines of ordinary Python.",
+  "example.txt": "Control file. Plain text.",
+};
+
+const fmt = (n: number) => n.toLocaleString("en-US");
+const decodeLines = [
+  { t: "cmd" as const, s: `$ stegguard decode ${w.file}` },
+  { t: "out" as const, s: '  "zero_width": {' },
+  { t: "hit" as const, s: `    "decoded": ${JSON.stringify(w.decoded)},` },
+  { t: "out" as const, s: `    "confidence": ${w.confidence},` },
+  { t: "out" as const, s: `    "occurrences": ${w.occurrences}` },
+  { t: "out" as const, s: "  }," },
+];
+const sanitizeLines = [
+  { t: "cmd" as const, s: `$ stegguard sanitize ${w.file}` },
+  { t: "hit" as const, s: `  "zero_width_removed": ${w.changes.zero_width_removed},` },
+  { t: "out" as const, s: `  "bidi_removed": ${w.changes.bidi_removed},` },
+  { t: "out" as const, s: `  "homoglyphs_replaced": ${w.changes.homoglyphs_replaced},` },
+  { t: "out" as const, s: `  "original_preserved": ${w.original_preserved}` },
+];
+
+const toc = [
+  { id: "walkthrough", label: "One file, start to finish" },
+  { id: "files", label: `All ${n} files` },
+  { id: "report", label: "The full report" },
+  { id: "left-out", label: "What we left out" },
+];
+---
+
+<Layout title="Demo · StegGuard" description={`StegGuard run on ${n} sample files: one hidden sentence decoded and removed, plus the full HTML report.`}>
+  <div class="docs wrap">
+    <main id="content" class="docs__main">
+      <p class="crumb"><a href="/">StegGuard</a> <span aria-hidden="true">/</span> Demo</p>
+      <h1>{capitalize(n)} sample files, one hidden sentence</h1>
+      <p class="lede">
+        We ran StegGuard {demo.stegguard_version} over {demo.total_files} sample files on {demo.generated}.
+        It flagged {demo.flagged_files} of them. Every number and line of output below comes from that run,
+        and the files are in <a href={samplesRepo}>stegguard/samples</a> so you can run it yourself.
+      </p>
+
+      <details class="toc-inline">
+        <summary>On this page</summary>
+        <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+      </details>
+
+      <h2 id="walkthrough"><a class="anchor" href="#walkthrough">One file, start to finish</a></h2>
+      <p>Here is line {w.line_number} of <code>{w.file}</code> as an editor or a GitHub diff shows it.</p>
+      <Specimen id="demo-line" label={`${w.file}, line ${w.line_number}`} segments={segment(w.line)}>
+        <Fragment slot="before">A normal changelog bullet.</Fragment>
+        <Fragment slot="after">{fmt(w.occurrences)} zero-width characters follow the full stop, one per bit.</Fragment>
+      </Specimen>
+
+      <h3>Detect</h3>
+      <CodeBlock
+        label="stegguard detect"
+        lines={[{ t: "cmd", s: `$ stegguard detect ${w.file}` }, ...w.detect_lines.map((s) => ({ t: s.startsWith("⚠") ? "hit" as const : "out" as const, s: "  " + s }))]}
+      />
+
+      <h3>Decode</h3>
+      <p>Zero-width space is a 0, zero-width non-joiner is a 1, eight to a byte.</p>
+      <CodeBlock label="stegguard decode (excerpt)" lines={decodeLines} />
+
+      <h3>Sanitize</h3>
+      <p>The clean copy goes to <code>{w.sanitized_path}</code>. The original is not touched.</p>
+      <CodeBlock label="stegguard sanitize (excerpt)" lines={sanitizeLines} />
+
+      <h2 id="files"><a class="anchor" href="#files">All {n} files</a></h2>
+      <div class="table-scroll">
+        <table class="spec spec--notes">
+          <thead><tr><th scope="col">File</th><th scope="col">Result</th><th scope="col">What's in it</th></tr></thead>
+          <tbody>
+            {demo.files.map((f) => (
+              <tr>
+                <th scope="row"><code>{f.file}</code></th>
+                <td><span class={`sev sev--${f.severity}`}>{f.severity}</span></td>
+                <td>{notes[f.file] ?? ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="report"><a class="anchor" href="#report">The full report</a></h2>
+      <p>
+        This is the report the command below wrote, unchanged. It is one self-contained HTML file:
+        no scripts or fonts from anywhere else, so it opens the same on an air-gapped machine.
+      </p>
+      <CodeBlock label="shell" lines={[{ t: "cmd", s: "$ stegguard detect samples -r --html report.html" }]} />
+      <p><a href="/demo/report.html">Open the report in its own tab</a></p>
+      <iframe class="report-frame" src="/demo/report.html" title={`StegGuard HTML report for the ${n} sample files`} loading="lazy"></iframe>
+
+      <h2 id="left-out"><a class="anchor" href="#left-out">What we left out</a></h2>
+      <aside class="callout callout--note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
+        <p>
+          Two more samples carry over 24,000 zero-width characters each. They hit the default limit of 10,000 findings,
+          so StegGuard stops and reports the scan as incomplete rather than clean. That is the right call, but it makes
+          a noisy demo. Raise the limit with <code>--max-findings</code> to scan files like that.
+        </p>
+      </aside>
+    </main>
+
+    <nav class="toc" aria-label="On this page">
+      <p class="toc__label">On this page</p>
+      <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+    </nav>
+  </div>
+</Layout>

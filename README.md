@@ -30,6 +30,8 @@ src/pages/docs.astro       CLI reference, limits, platform support
 src/lib/markdown.ts        markdown table / code-block parser for docs content
 src/lib/reveal.ts          splits text into visible text and hidden-character runs
 src/lib/highlight.ts       minimal shell highlighter for code panels
+src/pages/demo.astro       demo: walkthrough of one sample plus the full report
+scripts/build_demo.py      regenerates public/demo/report.html and src/data/demo.json
 src/styles/global.css      theme tokens (light + dark) and component styles
 public/                    static assets (images)
 astro.config.mjs           Astro config; `site` comes from SITE_URL
@@ -39,6 +41,15 @@ astro.config.mjs           Astro config; `site` comes from SITE_URL
 ## Docs content
 
 The Resource limits and Platform support tables (and the limits example command) on `/docs` are parsed at build time from `../stegguard-oss/docs/resource-limits.md` and `platform-support.md`. Edit those files, not the page. The build fails with a clear error if they are missing, so build from inside the monorepo.
+
+## Demo page
+
+`/demo` shows a real StegGuard run over the files in [stegguard/samples](https://github.com/stegguard/samples), checked out at `../../stegno_samples`. The HTML report (`public/demo/report.html`) and the page's numbers (`src/data/demo.json`) are generated, then committed, so the deploy needs neither the samples nor Python. To refresh them after changing the samples or the report generator:
+
+```sh
+python3 scripts/build_demo.py   # needs uv and ../stegguard-oss
+npm test                        # src/lib/demo.test.ts checks the output
+```
 
 ## Deploy (GitHub Pages + custom domain)
 
@@ -57,4 +68,4 @@ If `stegguard/stegguard` is private, add a read-only token as the `OSS_REPO_TOKE
 
 ## Before launch
 
-- The install command is `pip install git+https://github.com/stegguard/stegguard` until a PyPI release exists (`installCmd` in `src/pages/index.astro`).
+- The install command and advertised version come from `src/lib/install.ts`. Bump `RELEASE` there (and its test) when a new version is published to [PyPI](https://pypi.org/project/stegguard/).
