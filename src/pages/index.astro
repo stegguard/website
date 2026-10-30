@@ -1,10 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
+import Specimen from "../components/Specimen.astro";
+import demo from "../data/demo.json";
+import { countWord } from "../lib/words";
 import { segment, encodeZeroWidth } from "../lib/reveal";
+import { pipInstall, RELEASE, PYPI_URL } from "../lib/install";
 
-// Single source for the install command (markup + clipboard). Not on PyPI yet.
-const installCmd = "pip install git+https://github.com/stegguard/stegguard";
+const installCmd = pipInstall();
 
 // The hero specimen is the same report.md the workflow below runs against:
 // "hi" in 16 zero-width characters plus one right-to-left override.
@@ -84,7 +87,7 @@ const useCases = [
   <main id="content">
     <section class="hero wrap">
       <div class="hero__copy">
-        <p class="eyebrow">Alpha · v0.3.0 · Apache-2.0</p>
+        <p class="eyebrow">Alpha · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0</p>
         <h1>Find what's hiding in plain sight.</h1>
         <p class="lede">
           StegGuard scans files for zero-width characters, homoglyphs, whitespace channels and
@@ -92,22 +95,13 @@ const useCases = [
           copy without touching your original. Python standard library only, offline by default.
         </p>
         <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
-        <p class="hero__more"><a href="/docs">Commands, exit codes and limits</a></p>
+        <p class="hero__more"><a href="/demo">See it run on {countWord(demo.total_files)} sample files</a> · <a href="/docs">CLI reference</a></p>
       </div>
 
-      <figure class="specimen" id="specimen" data-revealed="false">
-        <figcaption class="specimen__head">
-          <span class="specimen__file">report.md, line 1</span>
-          <button class="specimen__toggle" type="button" aria-pressed="false" aria-controls="specimen-text">
-            Show hidden characters
-          </button>
-        </figcaption>
-        <p class="specimen__text" id="specimen-text">{specimen.map((s) => s.kind === "text" ? s.text : <mark class={`hid hid--${s.kind}`}>{s.label}</mark>)}</p>
-        <p class="specimen__note" aria-live="polite">
-          <span class="specimen__before">Looks like an ordinary sentence. Copy it into a model and it carries more than it shows.</span>
-          <span class="specimen__after">Sixteen zero-width characters spell <code>hi</code> in binary, and a right-to-left override flips how the last word renders.</span>
-        </p>
-      </figure>
+      <Specimen id="specimen-text" label="report.md, line 1" segments={specimen}>
+        <Fragment slot="before">Looks like an ordinary sentence. Copy it into a model and it carries more than it shows.</Fragment>
+        <Fragment slot="after">Sixteen zero-width characters spell <code>hi</code> in binary, and a right-to-left override flips how the last word renders.</Fragment>
+      </Specimen>
     </section>
 
     <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">
@@ -168,14 +162,4 @@ const useCases = [
     </section>
   </main>
 
-  <script>
-    const fig = document.getElementById("specimen");
-    const btn = fig?.querySelector<HTMLButtonElement>(".specimen__toggle");
-    btn?.addEventListener("click", () => {
-      const on = fig!.dataset.revealed !== "true";
-      fig!.dataset.revealed = String(on);
-      btn.setAttribute("aria-pressed", String(on));
-      btn.textContent = on ? "Hide hidden characters" : "Show hidden characters";
-    });
-  </script>
 </Layout>

@@ -54,8 +54,9 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
           <span>StegGuard</span>
         </a>
         <nav class="top__nav" aria-label="Primary">
+          <a href="/demo" aria-current={path === "/demo" ? "page" : undefined}>Demo</a>
           <a href="/docs" aria-current={path === "/docs" ? "page" : undefined}>Docs</a>
-          <a href="https://github.com/stegguard/stegguard">GitHub</a>
+          <a class="top__gh" href="https://github.com/stegguard/stegguard">GitHub</a>
           <button class="theme" id="theme" type="button" aria-label="Dark mode" aria-pressed="false">
             <svg class="theme__moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
               <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
@@ -116,6 +117,25 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
           btn.textContent = "Copied";
           setTimeout(() => (btn.textContent = "Copy"), 2000);
         });
+      });
+
+      // Highlight the TOC entry for the section in view (docs and demo pages).
+      const tocLinks = new Map(
+        Array.from(document.querySelectorAll<HTMLAnchorElement>(".toc a")).map((a) => [a.hash.slice(1), a]),
+      );
+      const tocObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            tocLinks.forEach((a) => a.removeAttribute("aria-current"));
+            tocLinks.get(entry.target.id)?.setAttribute("aria-current", "true");
+          }
+        },
+        { rootMargin: "-15% 0px -70% 0px" },
+      );
+      tocLinks.forEach((_, id) => {
+        const el = document.getElementById(id);
+        if (el) tocObserver.observe(el);
       });
     </script>
   </body>

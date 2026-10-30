@@ -2,8 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import { readDoc, parseMarkdownTable, extractCodeBlock } from "../lib/markdown";
+import { pipInstall, PYPI_URL } from "../lib/install";
 
-const installCmd = "pip install git+https://github.com/stegguard/stegguard";
+const installCmd = pipInstall();
+const imagesCmd = pipInstall("images");
 
 const commands = [
   { name: "stegguard detect", exits: "0 / 1 / 2", detail: "Scans files or directories for hidden content." },
@@ -64,8 +66,10 @@ const toc = [
       </aside>
 
       <h2 id="install"><a class="anchor" href="#install">Install</a></h2>
-      <p>Python 3.12 or newer. There is no PyPI release yet, so install from the repo:</p>
+      <p>Python 3.12 to 3.14. StegGuard is <a href={PYPI_URL}>published on PyPI</a>:</p>
       <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
+      <p>The core needs nothing outside the standard library. For LSB analysis on more image formats, add the optional <code>images</code> extra, which pulls in Pillow:</p>
+      <CodeBlock label="shell" copy={imagesCmd} lines={[{ t: "cmd", s: imagesCmd }]} />
 
       <h2 id="commands"><a class="anchor" href="#commands">Commands</a></h2>
       <ul class="fields">
@@ -143,24 +147,4 @@ const toc = [
     </nav>
   </div>
 
-  <script>
-    // Highlight the TOC entry for the section in view.
-    const links = new Map(
-      Array.from(document.querySelectorAll<HTMLAnchorElement>(".toc a")).map((a) => [a.hash.slice(1), a]),
-    );
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          links.forEach((a) => a.removeAttribute("aria-current"));
-          links.get(entry.target.id)?.setAttribute("aria-current", "true");
-        }
-      },
-      { rootMargin: "-15% 0px -70% 0px" },
-    );
-    links.forEach((_, id) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-  </script>
 </Layout>
