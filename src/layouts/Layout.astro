@@ -55,6 +55,7 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
         </a>
         <nav class="top__nav" aria-label="Primary">
           <a href="/demo" aria-current={path === "/demo" ? "page" : undefined}>Demo</a>
+          <a href="/blog" aria-current={path === "/blog" ? "page" : undefined}>Blog</a>
           <a href="/docs" aria-current={path === "/docs" ? "page" : undefined}>Docs</a>
           <a class="top__gh" href="https://github.com/stegguard/stegguard">GitHub</a>
           <button class="theme" id="theme" type="button" aria-label="Dark mode" aria-pressed="false">

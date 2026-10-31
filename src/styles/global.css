@@ -193,6 +193,11 @@ code {
   .top__nav .top__gh { display: none; }
   .top__nav a { padding-inline: 0.5rem; }
 }
+/* Four nav items plus the brand get tight on 320px screens. */
+@media (max-width: 379px) {
+  .brand { font-size: 1rem; }
+  .top__nav a { padding-inline: 0.4rem; font-size: 0.9rem; }
+}
 
 .theme {
   display: inline-grid;
@@ -562,6 +567,72 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg);
+}
+
+/* ---------- blog ---------- */
+
+.post-sub {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1vw + 1rem, 1.45rem);
+  color: var(--muted);
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin: 1.25rem 0 0;
+  font: 500 0.8rem/1.4 var(--font-mono);
+  color: var(--muted);
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.post-tags li {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font: 500 0.72rem/1.2 var(--font-mono);
+  color: var(--muted);
+}
+
+.techniques { margin: 1.25rem 0; }
+.technique {
+  padding-block: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.technique:last-child { border-bottom: 1px solid var(--border); }
+.docs__main .technique h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.15rem, 0.5vw + 1rem, 1.3rem);
+}
+.technique__num {
+  font: 600 0.8rem/1 var(--font-mono);
+  color: var(--accent);
+}
+.technique p { margin-bottom: 0.6rem; }
+.technique p:last-child { margin-bottom: 0; }
+.defense { color: var(--muted); }
+.defense strong { color: var(--tip); }
+
+.post-list { margin: 1rem 0 1.25rem; padding-left: 1.25rem; }
+.post-list li { margin-bottom: 0.6rem; max-width: 65ch; }
+
+.post-back {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
 }
 
 /* ---------- footer ---------- */

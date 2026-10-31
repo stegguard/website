@@ -1,6 +1,6 @@
 # StegGuard site
 
-Static marketing and docs site for [StegGuard](https://github.com/stegguard/stegguard), built with Astro and hand-written CSS (Anthropic theme: warm paper, terracotta). Two pages: the landing page (`/`) and a short CLI reference (`/docs`).
+Static marketing and docs site for [StegGuard](https://github.com/stegguard/stegguard), built with Astro and hand-written CSS (Anthropic theme: warm paper, terracotta). The landing page (`/`), a demo (`/demo`), a blog (`/blog`) and a short CLI reference (`/docs`).
 
 ## Requirements
 
@@ -31,6 +31,7 @@ src/lib/markdown.ts        markdown table / code-block parser for docs content
 src/lib/reveal.ts          splits text into visible text and hidden-character runs
 src/lib/highlight.ts       minimal shell highlighter for code panels
 src/pages/demo.astro       demo: walkthrough of one sample plus the full report
+src/pages/blog.astro       blog: single-page article with an on-page TOC
 scripts/build_demo.py      regenerates public/demo/report.html and src/data/demo.json
 src/styles/global.css      theme tokens (light + dark) and component styles
 public/                    static assets (images)

@@ -1,0 +1,434 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import Specimen from "../components/Specimen.astro";
+import { segment } from "../lib/reveal";
+import { pipInstall } from "../lib/install";
+import blog from "../data/blog.json";
+
+// Every output block on this page comes from src/data/blog.json, which
+// scripts/build_blog.py writes by running the real CLI on files it generates.
+const b = blog;
+
+type Detect = { lines: string[]; exit: number };
+const detectLines = (file: string, d: Detect) => [
+  { t: "cmd" as const, s: `$ stegguard detect ${file}` },
+  ...d.lines.map((s) => ({ t: s.startsWith("⚠") || s.startsWith("ℹ") ? ("hit" as const) : ("out" as const), s: "  " + s })),
+  { t: "out" as const, s: `  (exit code ${d.exit})` },
+];
+const changeLines = (file: string, s: { changes: Record<string, number> }) => [
+  { t: "cmd" as const, s: `$ stegguard sanitize ${file}` },
+  ...Object.entries(s.changes).map(([k, v]) => ({ t: "hit" as const, s: `  "${k}": ${v}` })),
+  { t: "out" as const, s: '  "original_preserved": true' },
+];
+
+const long = new Date(`${b.generated}T00:00:00Z`).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+
+const toc = [
+  { id: "intro", label: "Introduction" },
+  { id: "unicode", label: "1. The Unicode trap" },
+  { id: "whitespace", label: "2. Whitespace and line endings" },
+  { id: "images", label: "3. Pixels" },
+  { id: "gaps", label: "What it will not catch" },
+  { id: "ci", label: "Putting it in the pipeline" },
+  { id: "summary", label: "All twelve at a glance" },
+];
+
+const tags = ["Obfuscation", "Unicode", "Steganography", "Supply chain"];
+
+// Status for each of the twelve techniques, matched to what the shipped CLI does.
+const matrix = [
+  { n: "01", name: "Zero-width characters", state: "yes", how: "detect, decode, sanitize (file contents)" },
+  { n: "02", name: "Invisible Unicode", state: "partial", how: "Common zero-width and format characters. Variation selectors and tag characters are missed." },
+  { n: "03", name: "Homoglyphs", state: "yes", how: "detect, sanitize (Cyrillic and Greek)" },
+  { n: "04", name: "Lookalike characters", state: "no", how: "ASCII lookalikes such as 0/O are not flagged" },
+  { n: "05", name: "BIDI and control marks", state: "yes", how: "detect, sanitize" },
+  { n: "06", name: "Directional overrides", state: "yes", how: "detect, sanitize (Trojan Source)" },
+  { n: "07", name: "SNOW whitespace", state: "yes", how: "detect, decode, sanitize" },
+  { n: "08", name: "Mixed line endings", state: "yes", how: "detect, decode, sanitize (normalizes)" },
+  { n: "09", name: "Trailing spaces in file names", state: "no", how: "StegGuard reads contents, not directory entries" },
+  { n: "10", name: "LSB pixel steganography", state: "yes", how: "detect (chi-square, RS, Sample Pair). Images are not rewritten." },
+  { n: "11", name: "Steganalysis evasion", state: "partial", how: "Several statistical tests, but low-rate embedding can slip under them" },
+  { n: "12", name: "Parser differentials", state: "partial", how: "Sanitizing removes inputs parsers disagree on, but it cannot audit your parsers" },
+];
+const stateLabel: Record<string, string> = { yes: "Covered", partial: "Partly", no: "Not covered" };
+const stateClass: Record<string, string> = { yes: "clean", partial: "medium", no: "high" };
+
+const ciSnippet = [
+  "- name: Scan for hidden content",
+  "  run: |",
+  `    ${pipInstall()}`,
+  "    stegguard detect . -r --json findings.json",
+];
+---
+
+<Layout
+  title="The invisible attack surface · StegGuard"
+  description="Twelve ways attackers hide content in files, and what StegGuard does about each one, with real output from real samples."
+>
+  <div class="docs wrap">
+    <main id="content" class="docs__main">
+      <p class="crumb"><a href="/">StegGuard</a> <span aria-hidden="true">/</span> Blog</p>
+      <h1>The invisible attack surface</h1>
+      <p class="post-sub">Twelve ways to hide a payload, and what StegGuard does about each</p>
+      <p class="post-meta">
+        <time datetime={b.generated}>{long}</time>
+        <span aria-hidden="true">·</span> StegGuard {b.stegguard_version}
+        <span aria-hidden="true">·</span> Supply-chain security
+      </p>
+      <ul class="post-tags" aria-label="Tags">
+        {tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+
+      <aside class="callout callout--note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
+        <p>
+          Every output block here is real. We wrote a small sample file for each technique, ran
+          StegGuard {b.stegguard_version} from PyPI over it, and pasted what it printed. Where it
+          does not help, the post says so. A clean scan means nothing this version recognizes was
+          found, not that a file is safe.
+        </p>
+      </aside>
+
+      <details class="toc-inline">
+        <summary>On this page</summary>
+        <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+      </details>
+
+      <h2 id="intro"><a class="anchor" href="#intro">Introduction</a></h2>
+      <p>
+        A code review reads what an editor shows. A build runs what the compiler sees. Attackers
+        live in the gap between the two: characters nobody can see, whitespace nobody counts, and
+        pixels nobody checks.
+      </p>
+      <p>
+        Below are the techniques that show up in supply-chain incidents and red-team write-ups.
+        For each one we show the attack, then what a developer actually gets from
+        <code>stegguard detect</code>, <code>decode</code> and <code>sanitize</code>. Install it
+        with <code>{pipInstall()}</code> and the samples run on your machine too.
+      </p>
+      <p>
+        The pattern is the same every time. <strong>Detect</strong> tells you a file is carrying
+        something. <strong>Decode</strong> tells you what, without executing it.
+        <strong>Sanitize</strong> writes a clean copy and leaves the original alone.
+      </p>
+
+      <h2 id="unicode"><a class="anchor" href="#unicode">1. The Unicode trap</a></h2>
+      <p>
+        Source code is text, and text is an encoding, not just letters. These attacks abuse the
+        gap between what a character looks like and what it is.
+      </p>
+
+      <div class="techniques">
+        <section class="technique" id="zero-width">
+          <h3><span class="technique__num">01</span> Zero-width characters</h3>
+          <p>
+            <strong>Attack.</strong> U+200B and U+200C take up no space on screen, so a file can
+            carry one hidden bit per character. Eight of them make a byte. Here is a deploy helper
+            whose last line looks like any other:
+          </p>
+          <Specimen id="deploy-line" label="deploy.py, line 5" segments={segment(b.deploy.line)}>
+            <Fragment slot="before">An ordinary print statement.</Fragment>
+            <Fragment slot="after">{b.deploy.decode.occurrences} zero-width characters follow the closing bracket.</Fragment>
+          </Specimen>
+          <p class="defense">
+            <strong>With StegGuard.</strong> Detect flags the file, decode reads the message out
+            without running anything, and sanitize strips the characters.
+          </p>
+          <CodeBlock label="stegguard detect" lines={detectLines("deploy.py", b.deploy.detect)} />
+          <CodeBlock
+            label="stegguard decode (excerpt)"
+            lines={[
+              { t: "cmd", s: "$ stegguard decode deploy.py" },
+              { t: "out", s: '  "zero_width": {' },
+              { t: "hit", s: `    "decoded": ${JSON.stringify(b.deploy.decode.decoded)},` },
+              { t: "out", s: `    "confidence": ${b.deploy.decode.confidence},` },
+              { t: "out", s: `    "occurrences": ${b.deploy.decode.occurrences}` },
+              { t: "out", s: "  }" },
+            ]}
+          />
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("deploy.py", b.deploy.sanitize)} />
+          <p>
+            <strong>Why it helps.</strong> The decoded text is a shell command. You now know this
+            commit was an attempt at staging a payload, not a stray paste, and you have the string
+            to search for in the rest of the repo.
+          </p>
+        </section>
+
+        <section class="technique" id="invisible-unicode">
+          <h3><span class="technique__num">02</span> Invisible Unicode</h3>
+          <p>
+            <strong>Attack.</strong> The same idea with a wider alphabet: word joiners, soft
+            hyphens, byte-order marks and other format characters that fonts do not draw.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> The zero-width detector covers U+200B to U+200F,
+            U+2060 to U+2064, U+00AD and U+FEFF, and sanitize removes them. Variation selectors
+            (U+FE00 to U+FE0F) and Unicode tag characters (U+E0000 block) are not flagged: we
+            tested both on 0.4.0 and got a clean result. Treat this row as partial.
+          </p>
+        </section>
+
+        <section class="technique" id="homoglyphs">
+          <h3><span class="technique__num">03</span> Homoglyphs</h3>
+          <p>
+            <strong>Attack.</strong> Cyrillic <code>а</code> (U+0430) is not Latin
+            <code>a</code> (U+0061), but no font tells them apart. In <code>auth.py</code> the
+            last line defines a variable whose first letter is Cyrillic. Any search or signature
+            for <code>admin</code> misses it.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> It names the script and the position, and sanitize
+            maps the character back to Latin.
+          </p>
+          <CodeBlock label="stegguard detect" lines={detectLines("auth.py", b.auth.detect)} />
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("auth.py", b.auth.sanitize)} />
+          <p>
+            <strong>Why it helps.</strong> You do not have to eyeball every identifier. Run it over
+            a dependency before you vendor it and the lookalike names show up as a list.
+          </p>
+        </section>
+
+        <section class="technique" id="lookalikes">
+          <h3><span class="technique__num">04</span> Lookalike characters</h3>
+          <p>
+            <strong>Attack.</strong> Plain ASCII that reads alike: <code>paypa1</code>,
+            <code>passw0rd</code>, <code>rn</code> for <code>m</code>.
+          </p>
+          <p class="defense">
+            <strong>Not covered.</strong> Every character here is legitimate ASCII, so there is
+            nothing hidden to find. This is a naming problem. Defend it with an allow-list of
+            package and domain names, not a scanner.
+          </p>
+        </section>
+
+        <section class="technique" id="bidi">
+          <h3><span class="technique__num">05</span> BIDI and control marks</h3>
+          <p>
+            <strong>Attack.</strong> Bidirectional controls (U+202A to U+202E, U+2066 to U+2069)
+            reorder what a viewer shows. The bytes on disk and the picture on screen disagree.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> It finds every control and sanitize removes them. The
+            next section shows the version that matters most.
+          </p>
+        </section>
+
+        <section class="technique" id="directional-overrides">
+          <h3><span class="technique__num">06</span> Directional overrides (Trojan Source)</h3>
+          <p>
+            <strong>Attack.</strong> CVE-2021-42574. An override plus isolates make a string
+            literal look like it contains a comment, so a reviewer approves code the compiler reads
+            differently.
+          </p>
+          <Specimen id="access-line" label="access.py, line 3" segments={segment(b.access.line)}>
+            <Fragment slot="before">A condition and a harmless-looking comment.</Fragment>
+            <Fragment slot="after">The comment sits inside the string, wrapped in override and isolate controls.</Fragment>
+          </Specimen>
+          <p class="defense">
+            <strong>With StegGuard.</strong> The override is the one thing it marks critical.
+          </p>
+          <CodeBlock label="stegguard detect" lines={detectLines("access.py", b.access.detect)} />
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("access.py", b.access.sanitize)} />
+          <p>
+            <strong>Why it helps.</strong> Code review cannot see this class of bug, because the
+            reviewer is looking at the rendered text. A scan on the pull request can.
+          </p>
+        </section>
+      </div>
+
+      <h2 id="whitespace"><a class="anchor" href="#whitespace">2. Whitespace and line endings</a></h2>
+      <p>
+        Nothing here needs a special character. A space, a tab or a newline style is enough to
+        carry data.
+      </p>
+
+      <div class="techniques">
+        <section class="technique" id="snow">
+          <h3><span class="technique__num">07</span> SNOW-style whitespace</h3>
+          <p>
+            <strong>Attack.</strong> Trailing spaces are 0 bits and trailing tabs are 1 bits. The
+            file reads normally in an editor or a browser, and survives copy-paste.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> Detect spots the pattern, decode recovers the text,
+            and sanitize removes the trailing whitespace.
+          </p>
+          <CodeBlock label="stegguard detect" lines={detectLines("notes.txt", b.notes.detect)} />
+          <CodeBlock
+            label="stegguard decode (excerpt)"
+            lines={[
+              { t: "cmd", s: "$ stegguard decode notes.txt" },
+              { t: "out", s: '  "trailing_whitespace": {' },
+              { t: "hit", s: `    "decoded": ${JSON.stringify(b.notes.decode.decoded)},` },
+              { t: "out", s: `    "confidence": ${b.notes.decode.confidence}` },
+              { t: "out", s: "  }" },
+            ]}
+          />
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("notes.txt", b.notes.sanitize)} />
+          <p>
+            <strong>Why it helps.</strong> Editors and linters treat trailing whitespace as noise
+            and often strip it silently. A scanner treats it as a channel, which is the opposite
+            default, and the one you want for files you did not write.
+          </p>
+        </section>
+
+        <section class="technique" id="mixed-endings">
+          <h3><span class="technique__num">08</span> Mixed line endings</h3>
+          <p>
+            <strong>Attack.</strong> LF versus CRLF is one bit per line, and a shell script runs
+            the same either way. <code>build.sh</code> below hides a message in which lines end in
+            which style. Mixed endings also confuse diffs and linters that assume one style.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> It flags the mix, decodes the pattern and sanitize
+            normalizes every line.
+          </p>
+          <CodeBlock label="stegguard detect" lines={detectLines("build.sh", b.build.detect)} />
+          <CodeBlock
+            label="stegguard decode (excerpt)"
+            lines={[
+              { t: "cmd", s: "$ stegguard decode build.sh" },
+              { t: "out", s: '  "line_endings": {' },
+              { t: "hit", s: `    "decoded": ${JSON.stringify(b.build.decode.decoded)},` },
+              { t: "out", s: `    "confidence": ${b.build.decode.confidence}` },
+              { t: "out", s: "  }" },
+            ]}
+          />
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("build.sh", b.build.sanitize)} />
+          <p>
+            <strong>Why it helps.</strong> A repo with a legitimately mixed history will throw
+            findings too, so read them as leads rather than verdicts. The decode step is what
+            separates a message from a messy merge.
+          </p>
+        </section>
+
+        <section class="technique" id="trailing-space">
+          <h3><span class="technique__num">09</span> Trailing spaces in file names</h3>
+          <p>
+            <strong>Attack.</strong> On Windows, <code>malware.exe </code> and
+            <code>malware.exe</code> can both exist. Exact-match filters miss the spaced one.
+          </p>
+          <p class="defense">
+            <strong>Not covered.</strong> StegGuard scans what is inside files, not the directory
+            entries around them. Use an allow-list on names, and reject names with trailing spaces
+            or dots at the boundary where files enter your system.
+          </p>
+        </section>
+      </div>
+
+      <h2 id="images"><a class="anchor" href="#images">3. Pixels</a></h2>
+
+      <div class="techniques">
+        <section class="technique" id="lsb">
+          <h3><span class="technique__num">10</span> LSB pixel steganography</h3>
+          <p>
+            <strong>Attack.</strong> Overwriting the lowest bit of each colour channel changes a
+            pixel by at most one step in 255. <code>vacation.png</code> below looks the same as
+            <code>photo.png</code>, but carries a payload in every channel.
+          </p>
+          <p class="defense">
+            <strong>With StegGuard.</strong> It runs chi-square, RS and Sample Pair tests on the
+            pixel data. The tampered image is flagged, and the untouched control passes.
+          </p>
+          <CodeBlock label="stegguard detect vacation.png" lines={detectLines("vacation.png", b.image.stego)} />
+          <CodeBlock label="stegguard detect photo.png (control)" lines={detectLines("photo.png", b.image.control)} />
+          <p>
+            <strong>Why it helps.</strong> The control matters as much as the hit: it shows the
+            test is not simply calling every image suspicious. Be clear about the limit, though.
+            For images StegGuard reports and does not repair. <code>sanitize</code> on
+            <code>vacation.png</code> returns <code>{b.image.sanitize.status}</code> and leaves
+            the file untouched, so quarantine flagged images instead of cleaning them.
+          </p>
+        </section>
+
+        <section class="technique" id="steganalysis">
+          <h3><span class="technique__num">11</span> Steganalysis evasion</h3>
+          <p>
+            <strong>Attack.</strong> A careful attacker embeds fewer bits and tunes them until the
+            same statistical tests stay quiet.
+          </p>
+          <p class="defense">
+            <strong>Partly covered.</strong> Running three different tests, not one, makes this
+            harder. It does not make it impossible, and a low-rate payload can sit below the
+            threshold. This is why a clean scan is never proof, and why the docs publish how each
+            detector is measured.
+          </p>
+        </section>
+      </div>
+
+      <h2 id="gaps"><a class="anchor" href="#gaps">What it will not catch</a></h2>
+      <div class="techniques">
+        <section class="technique" id="parser-differentials">
+          <h3><span class="technique__num">12</span> Parser differentials</h3>
+          <p>
+            <strong>Attack.</strong> An editor, a shell, a compiler and a scanner each read the
+            same bytes by their own rules. A file that looks inert to the reviewer's tool can run
+            in the target one. Techniques 01 to 08 are all special cases of this gap.
+          </p>
+          <p class="defense">
+            <strong>Partly covered.</strong> Sanitize removes the inputs parsers tend to disagree
+            on: invisible characters, controls, odd whitespace and mixed endings. It cannot tell
+            you how your own parsers behave. Keep the number of parsers in the path small and
+            fuzz the ones you keep.
+          </p>
+        </section>
+      </div>
+      <aside class="callout callout--warn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"></path><path d="M12 10v5M12 18h.01"></path></svg>
+        <p>
+          <strong>Three of the twelve are not detection problems.</strong> ASCII lookalikes (04) and
+          file-name tricks (09) need name policy. Parser differentials (12) need fewer parsers in
+          the path. StegGuard narrows what reaches those parsers by stripping what they disagree
+          on, but it does not replace testing them.
+        </p>
+      </aside>
+      <p>
+        Saying so is deliberate. A tool that claims to find everything teaches teams to stop
+        looking. This one is alpha, and it tells you where its edges are.
+      </p>
+
+      <h2 id="ci"><a class="anchor" href="#ci">Putting it in the pipeline</a></h2>
+      <p>
+        <code>stegguard detect</code> exits <code>1</code> when it flags something, <code>0</code>
+        when the scan is clean, and <code>2</code> when it could not finish. That is all a CI job
+        needs. Here is the control file from this post, which a pipeline would let through:
+      </p>
+      <CodeBlock label="stegguard detect clean.py" lines={detectLines("clean.py", b.clean)} />
+      <p>And the step that gates a pull request:</p>
+      <CodeBlock label="GitHub Actions" copy={ciSnippet.join("\n")} lines={ciSnippet.map((s) => ({ t: "out" as const, s }))} />
+      <p>
+        Pair the exit code with <code>--json</code> or <code>--html</code> to attach a report to
+        the build, then <code>decode</code> whatever it flagged before you merge.
+      </p>
+
+      <h2 id="summary"><a class="anchor" href="#summary">All twelve at a glance</a></h2>
+      <div class="table-scroll">
+        <table class="spec spec--notes">
+          <thead><tr><th scope="col">Technique</th><th scope="col">StegGuard</th><th scope="col">What it does</th></tr></thead>
+          <tbody>
+            {matrix.map((m) => (
+              <tr>
+                <th scope="row"><span class="technique__num">{m.n}</span> {m.name}</th>
+                <td><span class={`sev sev--${stateClass[m.state]}`}>{stateLabel[m.state]}</span></td>
+                <td>{m.how}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        What you see is not always what you execute. Scan files you did not write before you
+        trust them, decode what is flagged, and keep the originals so you can show your work.
+      </p>
+
+      <p class="post-back"><a href="/docs">Read the StegGuard CLI reference</a> or <a href="/demo">see it run on real samples</a>.</p>
+    </main>
+
+    <nav class="toc" aria-label="On this page">
+      <p class="toc__label">On this page</p>
+      <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+    </nav>
+  </div>
+</Layout>
