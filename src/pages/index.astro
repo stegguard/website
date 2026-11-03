@@ -1,19 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
-import Specimen from "../components/Specimen.astro";
+import Sandbox from "../components/Sandbox.astro";
 import demo from "../data/demo.json";
 import { countWord } from "../lib/words";
-import { segment, encodeZeroWidth } from "../lib/reveal";
 import { pipInstall, RELEASE, PYPI_URL } from "../lib/install";
 
 const installCmd = pipInstall();
-
-// The hero specimen is the same report.md the workflow below runs against:
-// "hi" in 16 zero-width characters plus one right-to-left override.
-const specimen = segment(
-  `Q3 numbers are final.${encodeZeroWidth("hi")} Please summarize them for the ‮board.`,
-);
 
 // Lines are trimmed excerpts of real CLI output from a run on that file.
 const steps = [
@@ -86,22 +79,21 @@ const useCases = [
 <Layout>
   <main id="content">
     <section class="hero wrap">
-      <div class="hero__copy">
-        <p class="eyebrow">Alpha · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0</p>
-        <h1>Find what's hiding in plain sight.</h1>
-        <p class="lede">
-          StegGuard scans files for zero-width characters, homoglyphs, whitespace channels and
-          watermark signals. If it finds a hidden message it can decode it, and it writes a clean
-          copy without touching your original. Python standard library only, offline by default.
-        </p>
+      <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
+      <h1>Your text has characters you can't see.</h1>
+      <p class="lede">
+        StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
+        channels and watermark signals. If it finds a hidden message it can decode it, and it
+        writes a clean copy without touching your original. Python standard library only, offline
+        by default.
+      </p>
+
+      <Sandbox />
+
+      <div class="hero__install">
         <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
         <p class="hero__more"><a href="/demo">See it run on {countWord(demo.total_files)} sample files</a> · <a href="/docs">CLI reference</a></p>
       </div>
-
-      <Specimen id="specimen-text" label="report.md, line 1" segments={specimen}>
-        <Fragment slot="before">Looks like an ordinary sentence. Copy it into a model and it carries more than it shows.</Fragment>
-        <Fragment slot="after">Sixteen zero-width characters spell <code>hi</code> in binary, and a right-to-left override flips how the last word renders.</Fragment>
-      </Specimen>
     </section>
 
     <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">

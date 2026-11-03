@@ -19,7 +19,7 @@ const { id, label, segments } = Astro.props;
       Show hidden characters
     </button>
   </figcaption>
-  <p class="specimen__text" id={id}>{segments.map((s) => s.kind === "text" ? s.text : <><span class="raw">{s.raw}</span><mark class={`hid hid--${s.kind}`}>{s.label}</mark></>)}</p>
+  <p class="specimen__text" id={id}>{segments.map((s) => s.kind === "text" ? s.text : s.kind === "glyph" ? s.char : <><span class="raw">{s.raw}</span><mark class={`hid hid--${s.kind}`}>{s.label}</mark></>)}</p>
   <p class="specimen__note" aria-live="polite">
     <span class="specimen__before"><slot name="before" /></span>
     <span class="specimen__after"><slot name="after" /></span>
