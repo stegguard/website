@@ -244,15 +244,20 @@ code {
   padding: 0;
 }
 .top__nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--text); }
-/* The footer links to the source, so the narrowest screens drop it here. */
-@media (max-width: 419px) {
+/* The footer links to the source, so phones drop it here. Below 460px the bar
+ * has no room for it (430px iPhones scrolled sideways). */
+@media (max-width: 459px) {
   .top__nav .top__gh { display: none; }
   .top__nav a { padding-inline: 0.5rem; }
 }
-/* Four nav items plus the brand get tight on 320px screens. */
+/* The brand and four nav items overflow 320px screens at the usual spacing,
+ * so tighten the gaps and keep each link a 44px target. */
 @media (max-width: 379px) {
-  .brand { font-size: 1rem; }
-  .top__nav a { padding-inline: 0.4rem; font-size: var(--text-sm); }
+  .top__inner { gap: 0.25rem; padding-inline: 0.75rem; }
+  .brand { gap: 0.25rem; font-size: 1rem; }
+  .top__nav { gap: 0; }
+  .top__nav a { min-width: 44px; justify-content: center; padding-inline: 0.25rem; font-size: var(--text-sm); }
+  .theme { margin-left: 0; }
 }
 
 .theme {
