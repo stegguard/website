@@ -1,19 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
-import Specimen from "../components/Specimen.astro";
+import Sandbox from "../components/Sandbox.astro";
+import Integrations from "../components/Integrations.astro";
 import demo from "../data/demo.json";
 import { countWord } from "../lib/words";
-import { segment, encodeZeroWidth } from "../lib/reveal";
 import { pipInstall, RELEASE, PYPI_URL } from "../lib/install";
 
 const installCmd = pipInstall();
-
-// The hero specimen is the same report.md the workflow below runs against:
-// "hi" in 16 zero-width characters plus one right-to-left override.
-const specimen = segment(
-  `Q3 numbers are final.${encodeZeroWidth("hi")} Please summarize them for the ‮board.`,
-);
 
 // Lines are trimmed excerpts of real CLI output from a run on that file.
 const steps = [
@@ -54,26 +48,33 @@ const steps = [
 
 const specs = [
   {
+    id: "text",
     name: "Text and source",
     detail: "Zero-width Unicode, bidirectional overrides, Cyrillic and Greek homoglyphs, trailing-space and tab channels, mixed line endings.",
-    where: "any text or source file",
+    href: "/docs#commands",
   },
   {
+    id: "media",
     name: "Images, audio and media",
     detail: "Pixel-level LSB anomalies (chi-square, RS, entropy, sample-pair), PNG private chunks, JPEG EXIF/XMP/IPTC, PCM audio statistics.",
-    where: "images, audio, structured media",
+    href: "/docs#commands",
   },
   {
+    id: "documents",
     name: "Documents and containers",
     detail: "PDF embedded files, DOCX/PPTX/XLSX/ZIP members, nested archives, hidden content in SVG and HTML.",
-    where: "documents, archives",
+    href: "/docs#limits",
   },
   {
+    id: "watermarks",
     name: "Watermarks and provenance",
     detail: "Metadata, structural and text-pattern evidence, device fingerprints, and C2PA manifests validated through c2patool.",
-    where: "images, audio, video",
+    href: "/docs#commands",
   },
 ];
+
+// Pixels of the 10x4 media sketch that are drawn as "found".
+const foundCells = new Set([3, 12, 17, 26, 34]);
 
 const useCases = [
   { label: "CI gate", body: "Fail a pull request that adds BIDI overrides or homoglyphs to source files." },
@@ -86,26 +87,30 @@ const useCases = [
 <Layout>
   <main id="content">
     <section class="hero wrap">
-      <div class="hero__copy">
-        <p class="eyebrow">Alpha · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0</p>
-        <h1>Find what's hiding in plain sight.</h1>
-        <p class="lede">
-          StegGuard scans files for zero-width characters, homoglyphs, whitespace channels and
-          watermark signals. If it finds a hidden message it can decode it, and it writes a clean
-          copy without touching your original. Python standard library only, offline by default.
-        </p>
+      <div class="hero__intro">
+        <div>
+          <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
+          <h1>Your text has characters you can't see.</h1>
+          <p class="lede">
+            StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
+            channels and watermark signals. If it finds a hidden message it can decode it, and it
+            writes a clean copy without touching your original. Python standard library only, offline
+            by default.
+          </p>
+        </div>
+        <img class="hero__banner" src="/images/steg_banner.png" alt="StegGuard logo: a stag inside a magnifying glass held over binary digits, captioned 'Uncovering hidden data'" width="630" height="276" fetchpriority="high" />
+      </div>
+
+      <Sandbox />
+
+      <div class="hero__install">
         <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
         <p class="hero__more"><a href="/demo">See it run on {countWord(demo.total_files)} sample files</a> · <a href="/docs">CLI reference</a></p>
       </div>
-
-      <Specimen id="specimen-text" label="report.md, line 1" segments={specimen}>
-        <Fragment slot="before">Looks like an ordinary sentence. Copy it into a model and it carries more than it shows.</Fragment>
-        <Fragment slot="after">Sixteen zero-width characters spell <code>hi</code> in binary, and a right-to-left override flips how the last word renders.</Fragment>
-      </Specimen>
     </section>
 
     <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">
-      <h2 id="steps-h">One workflow instead of five one-off tools.</h2>
+      <h2 id="steps-h">One workflow instead of several one-off tools.</h2>
       <p class="section-lede">Detect, decode, then sanitize a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
       <ol class="steps__list">
         {steps.map((step, i) => (
@@ -121,23 +126,40 @@ const useCases = [
       </ol>
     </section>
 
+    <Integrations />
+
     <section class="wrap" id="detects" aria-labelledby="detects-h">
       <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>
-      <div class="table-scroll">
-        <table class="spec">
-          <thead>
-            <tr><th scope="col">Category</th><th scope="col">What it looks for</th><th scope="col">Where</th></tr>
-          </thead>
-          <tbody>
-            {specs.map((s) => (
-              <tr>
-                <th scope="row">{s.name}</th>
-                <td>{s.detail}</td>
-                <td class="muted">{s.where}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div class="caps">
+        {specs.map((c) => (
+          <article class="cap">
+            <div class="cap__visual" aria-hidden="true">
+              {c.id === "text" && <p class="cap__text">p<mark class="cap__found">{"а"}</mark>ypal.com</p>}
+              {c.id === "media" && (
+                <div class="cap__grid">
+                  {Array.from({ length: 40 }, (_, i) => <span class={foundCells.has(i) ? "is-found" : undefined}></span>)}
+                </div>
+              )}
+              {c.id === "documents" && (
+                <ul class="cap__tree">
+                  <li>reports/</li>
+                  <li>q3.docx</li>
+                  <li>archive/</li>
+                  <li class="is-found">notes.zip</li>
+                </ul>
+              )}
+              {c.id === "watermarks" && (
+                <ul class="cap__rows">
+                  <li>C2PA manifest: valid</li>
+                  <li class="is-found">watermark signal: detected</li>
+                </ul>
+              )}
+            </div>
+            <h3>{c.name}</h3>
+            <p>{c.detail}</p>
+            <a href={c.href}>Read the docs<span class="visually-hidden">: {c.name}</span></a>
+          </article>
+        ))}
       </div>
     </section>
 
@@ -153,12 +175,19 @@ const useCases = [
       </dl>
     </section>
 
-    <section class="closing wrap">
-      <div>
-        <p>Everything on this page ships in the open-source package. It is alpha software, so treat what it reports as evidence to check, not a final verdict.</p>
-        <p><a href="https://github.com/stegguard/stegguard">Read the source on GitHub</a></p>
-      </div>
-      <img src="/images/steg_banner.png" alt="StegGuard logo: a stag inside a magnifying glass held over binary digits, captioned 'Uncovering hidden data'" width="630" height="276" loading="lazy" />
+    <section class="closing wrap" aria-labelledby="closing-h">
+      <h2 id="closing-h">Read the source before you trust it.</h2>
+      <p class="section-lede">StegGuard is alpha software. Treat what it reports as evidence to check, not a final verdict.</p>
+      <dl class="facts">
+        <div><dt>License</dt><dd>Apache-2.0</dd></div>
+        <div><dt>Dependencies</dt><dd>Python standard library only (Pillow is optional, for images)</dd></div>
+        <div><dt>Network</dt><dd>Offline by default</dd></div>
+        <div><dt>Tests</dt><dd><a href="https://github.com/stegguard/stegguard/actions">Run in CI on every push and pull request</a></dd></div>
+      </dl>
+      <p class="closing__actions">
+        <a class="btn btn--solid" href="https://github.com/stegguard/stegguard">Read the source</a>
+        <a class="btn" href="https://github.com/stegguard/stegguard/security/policy">Security policy</a>
+      </p>
     </section>
   </main>
 

@@ -1,0 +1,101 @@
+---
+import { analyze, encodeZeroWidth, type Segment } from "../lib/reveal";
+
+// Live checker: paste text, see its hidden characters light up. The analysis runs
+// in the visitor's browser. The preloaded sample is also rendered here at build
+// time, so the page shows the same reveal with JavaScript off.
+const SAMPLES = [
+  {
+    id: "hidden",
+    label: "Hidden message",
+    text: `Q3 numbers are final.${encodeZeroWidth("hi")} Please summarize them for the ‮board.`,
+  },
+  { id: "lookalike", label: "Look-alike link", text: "Confirm your login at pаypal.com today." },
+  { id: "clean", label: "Clean text", text: "Q3 numbers are final. Please summarize them for the board." },
+] as const;
+
+const initial = SAMPLES[0];
+const { segments, findings } = analyze(initial.text);
+
+const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid hid--${s.kind}`);
+---
+
+<section class="sandbox" data-sandbox aria-labelledby="sandbox-label">
+  <div class="sandbox__input">
+    <label id="sandbox-label" class="sandbox__label" for="sandbox-text">Text to check</label>
+    <textarea id="sandbox-text" class="sandbox__text" rows="4" spellcheck="false" autocomplete="off">{initial.text}</textarea>
+    <div class="sandbox__bar">
+      <div class="sandbox__samples" role="group" aria-label="Sample text" hidden>
+        {SAMPLES.map((s) => (
+          <button type="button" class="sandbox__sample" data-sample={s.text} aria-pressed={s.id === initial.id ? "true" : "false"}>{s.label}</button>
+        ))}
+      </div>
+      <p class="sandbox__privacy">Runs in your browser. Nothing is uploaded.</p>
+    </div>
+  </div>
+
+  <div class="sandbox__result" aria-live="polite">
+    <p class="sandbox__head">What StegGuard sees</p>
+    <p class="sandbox__seen" data-seen>{segments.map((s) => s.kind === "text" ? s.text : s.kind === "glyph" ? <mark class={chipClass(s)} title={s.label}>{s.char}</mark> : <mark class={chipClass(s)}>{s.label}</mark>)}</p>
+    <ul class="sandbox__findings" data-findings>
+      {findings.map((f) => <li>{f}</li>)}
+    </ul>
+    <p class="sandbox__clean" data-clean hidden>
+      Nothing hidden found in this text. The command-line tool checks more channels, such as trailing whitespace and whole files.
+    </p>
+  </div>
+</section>
+
+<script>
+  import { analyze } from "../lib/reveal";
+
+  document.querySelectorAll<HTMLElement>("[data-sandbox]").forEach((root) => {
+    const input = root.querySelector<HTMLTextAreaElement>(".sandbox__text")!;
+    const seen = root.querySelector<HTMLElement>("[data-seen]")!;
+    const list = root.querySelector<HTMLElement>("[data-findings]")!;
+    const clean = root.querySelector<HTMLElement>("[data-clean]")!;
+    const samples = root.querySelector<HTMLElement>(".sandbox__samples")!;
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".sandbox__sample"));
+    samples.hidden = false;
+
+    const chip = (cls: string, text: string, title?: string) => {
+      const m = document.createElement("mark");
+      m.className = cls;
+      m.textContent = text;
+      if (title) m.title = title;
+      return m;
+    };
+
+    const render = () => {
+      const { segments, findings } = analyze(input.value);
+      seen.replaceChildren(
+        ...segments.map((s) =>
+          s.kind === "text"
+            ? document.createTextNode(s.text)
+            : s.kind === "glyph"
+              ? chip("hid hid--glyph", s.char, s.label)
+              : chip(`hid hid--${s.kind}`, s.label),
+        ),
+      );
+      list.replaceChildren(
+        ...findings.map((f) => {
+          const li = document.createElement("li");
+          li.textContent = f;
+          return li;
+        }),
+      );
+      const isEmpty = input.value.length === 0;
+      clean.hidden = findings.length > 0 || isEmpty;
+      if (isEmpty) seen.textContent = "Type or paste some text above.";
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sample === input.value)));
+    };
+
+    input.addEventListener("input", render);
+    buttons.forEach((b) =>
+      b.addEventListener("click", () => {
+        input.value = b.dataset.sample ?? "";
+        render();
+      }),
+    );
+  });
+</script>
