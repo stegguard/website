@@ -48,26 +48,33 @@ const steps = [
 
 const specs = [
   {
+    id: "text",
     name: "Text and source",
     detail: "Zero-width Unicode, bidirectional overrides, Cyrillic and Greek homoglyphs, trailing-space and tab channels, mixed line endings.",
-    where: "any text or source file",
+    href: "/docs#commands",
   },
   {
+    id: "media",
     name: "Images, audio and media",
     detail: "Pixel-level LSB anomalies (chi-square, RS, entropy, sample-pair), PNG private chunks, JPEG EXIF/XMP/IPTC, PCM audio statistics.",
-    where: "images, audio, structured media",
+    href: "/docs#commands",
   },
   {
+    id: "documents",
     name: "Documents and containers",
     detail: "PDF embedded files, DOCX/PPTX/XLSX/ZIP members, nested archives, hidden content in SVG and HTML.",
-    where: "documents, archives",
+    href: "/docs#limits",
   },
   {
+    id: "watermarks",
     name: "Watermarks and provenance",
     detail: "Metadata, structural and text-pattern evidence, device fingerprints, and C2PA manifests validated through c2patool.",
-    where: "images, audio, video",
+    href: "/docs#commands",
   },
 ];
+
+// Pixels of the 10x4 media sketch that are drawn as "found".
+const foundCells = new Set([3, 12, 17, 26, 34]);
 
 const useCases = [
   { label: "CI gate", body: "Fail a pull request that adds BIDI overrides or homoglyphs to source files." },
@@ -118,21 +125,36 @@ const useCases = [
 
     <section class="wrap" id="detects" aria-labelledby="detects-h">
       <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>
-      <div class="table-scroll">
-        <table class="spec">
-          <thead>
-            <tr><th scope="col">Category</th><th scope="col">What it looks for</th><th scope="col">Where</th></tr>
-          </thead>
-          <tbody>
-            {specs.map((s) => (
-              <tr>
-                <th scope="row">{s.name}</th>
-                <td>{s.detail}</td>
-                <td class="muted">{s.where}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div class="caps">
+        {specs.map((c) => (
+          <article class="cap">
+            <div class="cap__visual" aria-hidden="true">
+              {c.id === "text" && <p class="cap__text">p<mark class="cap__found">{"а"}</mark>ypal.com</p>}
+              {c.id === "media" && (
+                <div class="cap__grid">
+                  {Array.from({ length: 40 }, (_, i) => <span class={foundCells.has(i) ? "is-found" : undefined}></span>)}
+                </div>
+              )}
+              {c.id === "documents" && (
+                <ul class="cap__tree">
+                  <li>reports/</li>
+                  <li>q3.docx</li>
+                  <li>archive/</li>
+                  <li class="is-found">notes.zip</li>
+                </ul>
+              )}
+              {c.id === "watermarks" && (
+                <ul class="cap__rows">
+                  <li>C2PA manifest: valid</li>
+                  <li class="is-found">watermark signal: detected</li>
+                </ul>
+              )}
+            </div>
+            <h3>{c.name}</h3>
+            <p>{c.detail}</p>
+            <a href={c.href}>Read the docs<span class="visually-hidden">: {c.name}</span></a>
+          </article>
+        ))}
       </div>
     </section>
 

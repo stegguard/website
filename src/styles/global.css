@@ -527,6 +527,64 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
 .spec--narrow tbody th { min-width: 0; width: 3.5rem; }
 .spec .num { white-space: nowrap; font-variant-numeric: tabular-nums; }
 
+.caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.cap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.cap h3 { font-size: 1.2rem; margin-bottom: 0.4rem; }
+.cap p { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.95rem; }
+.cap a { display: inline-flex; align-items: center; min-height: 44px; margin-top: auto; font-size: 0.95rem; }
+.cap__visual {
+  display: grid;
+  align-items: center;
+  min-height: 5.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font: 0.85rem/1.5 var(--font-mono);
+  overflow: hidden;
+}
+.cap__text { margin: 0; font: 400 1.25rem/1.2 var(--font-display); }
+.cap__found, .cap__grid .is-found, .cap__tree .is-found, .cap__rows .is-found {
+  background: var(--found-soft);
+  color: var(--found);
+  border: 1px dashed var(--found);
+  border-radius: 3px;
+}
+.cap__found { padding: 0 0.15em; }
+.cap__grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.cap__grid span { aspect-ratio: 1; background: var(--surface-2); border-radius: 2px; }
+.cap__grid .is-found { background: var(--found); border: 0; }
+.cap__tree, .cap__rows { margin: 0; padding: 0; list-style: none; }
+.cap__tree li, .cap__rows li { padding: 0.1rem 0.4rem; white-space: nowrap; }
+.cap__tree li:nth-child(n+2) { padding-left: 1.4rem; }
+.cap__tree li:nth-child(4) { padding-left: 2.4rem; }
+.cap__tree li:nth-child(4).is-found { margin-left: 0.4rem; padding-left: 0.4rem; display: inline-block; }
+.cap__rows li { margin-block: 0.2rem; }
+.cap__rows .is-found { display: inline-block; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .uses { display: grid; gap: 1.5rem 3rem; margin: 1.5rem 0 0; }
 .uses dt {
   font-family: var(--font-display);
