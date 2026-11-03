@@ -32,6 +32,17 @@ const toc = [
   { id: "gaps", label: "What it will not catch" },
   { id: "ci", label: "Putting it in the pipeline" },
   { id: "summary", label: "All twelve at a glance" },
+  { id: "sources", label: "Sources" },
+];
+
+// Published research and incident reports cited in the techniques above.
+const sources = [
+  { who: "Nicholas Boucher and Ross Anderson", title: "Trojan Source: Invisible Vulnerabilities", when: "October 2021", href: "https://arxiv.org/abs/2111.00169" },
+  { who: "Johann Rehberger, Embrace The Red", title: "ASCII Smuggler Tool: Crafting Invisible Text and Decoding Hidden Codes", when: "January 2024", href: "https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/" },
+  { who: "Veracode", title: "Sophisticated NPM Attack Leveraging Unicode Steganography and Google Calendar C2", when: "May 2025", href: "https://www.veracode.com/resources/sophisticated-npm-attack-leveraging-unicode-steganography-and-google-calendar-c2-2/" },
+  { who: "BleepingComputer", title: "Self-spreading GlassWorm malware hits OpenVSX, VS Code registries", when: "October 2025", href: "https://www.bleepingcomputer.com/news/security/self-spreading-glassworm-malware-hits-openvsx-vs-code-registries/" },
+  { who: "Endor Labs", title: "Invisible Threats and the Blind Spots of Security", when: undefined, href: "https://www.endorlabs.com/learn/invisible-threats-glassworm-unicode-vscode" },
+  { who: "Veracode", title: "Hiding in Plain Pixels: Malicious NPM Package Found", when: "February 2026", href: "https://www.veracode.com/blog/malicious-npm-package-hiding-in-plain-pixels" },
 ];
 
 const tags = ["Obfuscation", "Unicode", "Steganography", "Supply chain"];
@@ -64,7 +75,7 @@ const ciSnippet = [
 
 <Layout
   title="The invisible attack surface · StegGuard"
-  description="Twelve ways attackers hide content in files, and what StegGuard does about each one, with real output from real samples."
+  description="Twelve ways attackers hide content in files, and what StegGuard does about each one, with its output on sample files."
 >
   <div class="docs wrap">
     <main id="content" class="docs__main">
@@ -83,8 +94,8 @@ const ciSnippet = [
       <aside class="callout callout--note">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5h.01"></path></svg>
         <p>
-          Every output block here is real. We wrote a small sample file for each technique, ran
-          StegGuard {b.stegguard_version} from PyPI over it, and pasted what it printed. Where it
+          Every output block here is real. We wrote small sample files, ran StegGuard {b.stegguard_version}{" "}
+          from PyPI over them, and pasted what it printed. Where it
           does not help, the post says so. A clean scan means nothing this version recognizes was
           found, not that a file is safe.
         </p>
@@ -97,26 +108,27 @@ const ciSnippet = [
 
       <h2 id="intro"><a class="anchor" href="#intro">Introduction</a></h2>
       <p>
-        A code review reads what an editor shows. A build runs what the compiler sees. Attackers
-        live in the gap between the two: characters nobody can see, whitespace nobody counts, and
-        pixels nobody checks.
+        A reviewer reads code in an editor. The compiler, the shell and the image decoder read
+        bytes, and the two views do not always match. Each technique below hides something in
+        that mismatch, whether it is a character that draws nothing, whitespace an editor hides by
+        default, or a pixel change too small to see.
       </p>
       <p>
-        Below are the techniques that show up in supply-chain incidents and red-team write-ups.
-        For each one we show the attack, then what a developer actually gets from
+        Some of these come from published research, and some from malware found on npm and Open
+        VSX; the sections below link the reports. For each one we show the attack, then what a developer actually gets from{" "}
         <code>stegguard detect</code>, <code>decode</code> and <code>sanitize</code>. Install it
         with <code>{pipInstall()}</code> and the samples run on your machine too.
       </p>
       <p>
-        The pattern is the same every time. <strong>Detect</strong> tells you a file is carrying
-        something. <strong>Decode</strong> tells you what, without executing it.
+        <strong>Detect</strong> tells you a file is carrying
+        something. <strong>Decode</strong> tells you what, without executing it.{" "}
         <strong>Sanitize</strong> writes a clean copy and leaves the original alone.
       </p>
 
       <h2 id="unicode"><a class="anchor" href="#unicode">1. The Unicode trap</a></h2>
       <p>
-        Source code is text, and text is an encoding, not just letters. These attacks abuse the
-        gap between what a character looks like and what it is.
+        Every attack in this section relies on the difference between how a character looks and
+        which code point it actually is.
       </p>
 
       <div class="techniques">
@@ -149,7 +161,7 @@ const ciSnippet = [
           />
           <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("deploy.py", b.deploy.sanitize)} />
           <p>
-            <strong>Why it helps.</strong> The decoded text is a shell command. You now know this
+            The decoded text is a shell command. You now know this
             commit was an attempt at staging a payload, not a stray paste, and you have the string
             to search for in the rest of the repo.
           </p>
@@ -159,20 +171,28 @@ const ciSnippet = [
           <h3><span class="technique__num">02</span> Invisible Unicode</h3>
           <p>
             <strong>Attack.</strong> The same idea with a wider alphabet: word joiners, soft
-            hyphens, byte-order marks and other format characters that fonts do not draw.
+            hyphens, byte-order marks and other format characters that fonts do not draw. The{" "}
+            <a href="https://www.endorlabs.com/learn/invisible-threats-glassworm-unicode-vscode">GlassWorm</a>{" "}
+            extensions on Open VSX (October 2025) and the npm package{" "}
+            <a href="https://www.veracode.com/resources/sophisticated-npm-attack-leveraging-unicode-steganography-and-google-calendar-c2-2/">os-info-checker-es6</a>{" "}
+            (May 2025) both hid their code in long runs of variation selectors.{" "}
+            <a href="https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/">ASCII smuggling</a>{" "}
+            does the same with Unicode tag characters to hide instructions from the person
+            reading an LLM chat.
           </p>
           <p class="defense">
             <strong>With StegGuard.</strong> The zero-width detector covers U+200B to U+200F,
             U+2060 to U+2064, U+00AD and U+FEFF, and sanitize removes them. Variation selectors
             (U+FE00 to U+FE0F) and Unicode tag characters (U+E0000 block) are not flagged: we
-            tested both on 0.4.0 and got a clean result. Treat this row as partial.
+            tested both on 0.4.0 and got a clean result. We did not test the supplement range
+            (U+E0100 to U+E01EF) that os-info-checker-es6 used. Treat this row as partial.
           </p>
         </section>
 
         <section class="technique" id="homoglyphs">
           <h3><span class="technique__num">03</span> Homoglyphs</h3>
           <p>
-            <strong>Attack.</strong> Cyrillic <code>а</code> (U+0430) is not Latin
+            <strong>Attack.</strong> Cyrillic <code>а</code> (U+0430) is not Latin{" "}
             <code>a</code> (U+0061), but no font tells them apart. In <code>auth.py</code> the
             last line defines a variable whose first letter is Cyrillic. Any search or signature
             for <code>admin</code> misses it.
@@ -184,7 +204,7 @@ const ciSnippet = [
           <CodeBlock label="stegguard detect" lines={detectLines("auth.py", b.auth.detect)} />
           <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("auth.py", b.auth.sanitize)} />
           <p>
-            <strong>Why it helps.</strong> You do not have to eyeball every identifier. Run it over
+            You do not have to eyeball every identifier. Run it over
             a dependency before you vendor it and the lookalike names show up as a list.
           </p>
         </section>
@@ -192,7 +212,7 @@ const ciSnippet = [
         <section class="technique" id="lookalikes">
           <h3><span class="technique__num">04</span> Lookalike characters</h3>
           <p>
-            <strong>Attack.</strong> Plain ASCII that reads alike: <code>paypa1</code>,
+            <strong>Attack.</strong> Plain ASCII that reads alike: <code>paypa1</code>,{" "}
             <code>passw0rd</code>, <code>rn</code> for <code>m</code>.
           </p>
           <p class="defense">
@@ -209,15 +229,16 @@ const ciSnippet = [
             reorder what a viewer shows. The bytes on disk and the picture on screen disagree.
           </p>
           <p class="defense">
-            <strong>With StegGuard.</strong> It finds every control and sanitize removes them. The
-            next section shows the version that matters most.
+            <strong>With StegGuard.</strong> It finds every control and sanitize removes them.
+            Trojan Source, next, is the best-known way to abuse them.
           </p>
         </section>
 
         <section class="technique" id="directional-overrides">
           <h3><span class="technique__num">06</span> Directional overrides (Trojan Source)</h3>
           <p>
-            <strong>Attack.</strong> CVE-2021-42574. An override plus isolates make a string
+            <strong>Attack.</strong> CVE-2021-42574, from Boucher and Anderson's{" "}
+            <a href="https://arxiv.org/abs/2111.00169">2021 paper</a>. An override plus isolates make a string
             literal look like it contains a comment, so a reviewer approves code the compiler reads
             differently.
           </p>
@@ -231,7 +252,7 @@ const ciSnippet = [
           <CodeBlock label="stegguard detect" lines={detectLines("access.py", b.access.detect)} />
           <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("access.py", b.access.sanitize)} />
           <p>
-            <strong>Why it helps.</strong> Code review cannot see this class of bug, because the
+            Code review cannot see this class of bug, because the
             reviewer is looking at the rendered text. A scan on the pull request can.
           </p>
         </section>
@@ -267,7 +288,7 @@ const ciSnippet = [
           />
           <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("notes.txt", b.notes.sanitize)} />
           <p>
-            <strong>Why it helps.</strong> Editors and linters treat trailing whitespace as noise
+            Editors and linters treat trailing whitespace as noise
             and often strip it silently. A scanner treats it as a channel, which is the opposite
             default, and the one you want for files you did not write.
           </p>
@@ -297,7 +318,7 @@ const ciSnippet = [
           />
           <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("build.sh", b.build.sanitize)} />
           <p>
-            <strong>Why it helps.</strong> A repo with a legitimately mixed history will throw
+            A repo with a legitimately mixed history will throw
             findings too, so read them as leads rather than verdicts. The decode step is what
             separates a message from a messy merge.
           </p>
@@ -306,7 +327,7 @@ const ciSnippet = [
         <section class="technique" id="trailing-space">
           <h3><span class="technique__num">09</span> Trailing spaces in file names</h3>
           <p>
-            <strong>Attack.</strong> On Windows, <code>malware.exe </code> and
+            <strong>Attack.</strong> On Windows, <code>malware.exe </code> and{" "}
             <code>malware.exe</code> can both exist. Exact-match filters miss the spaced one.
           </p>
           <p class="defense">
@@ -318,13 +339,20 @@ const ciSnippet = [
       </div>
 
       <h2 id="images"><a class="anchor" href="#images">3. Pixels</a></h2>
+      <p>
+        In February 2026 the npm package{" "}
+        <a href="https://www.veracode.com/blog/malicious-npm-package-hiding-in-plain-pixels">buildrunner-dev</a>{" "}
+        downloaded PNGs and pulled a Windows executable out of their RGB values. That one stored
+        whole bytes in each pixel. The LSB version below is harder to spot, because it changes
+        each value by at most one.
+      </p>
 
       <div class="techniques">
         <section class="technique" id="lsb">
           <h3><span class="technique__num">10</span> LSB pixel steganography</h3>
           <p>
             <strong>Attack.</strong> Overwriting the lowest bit of each colour channel changes a
-            pixel by at most one step in 255. <code>vacation.png</code> below looks the same as
+            pixel by at most one step in 255. <code>vacation.png</code> below looks the same as{" "}
             <code>photo.png</code>, but carries a payload in every channel.
           </p>
           <p class="defense">
@@ -334,9 +362,9 @@ const ciSnippet = [
           <CodeBlock label="stegguard detect vacation.png" lines={detectLines("vacation.png", b.image.stego)} />
           <CodeBlock label="stegguard detect photo.png (control)" lines={detectLines("photo.png", b.image.control)} />
           <p>
-            <strong>Why it helps.</strong> The control matters as much as the hit: it shows the
+            The control matters as much as the hit: it shows the
             test is not simply calling every image suspicious. Be clear about the limit, though.
-            For images StegGuard reports and does not repair. <code>sanitize</code> on
+            For images StegGuard reports and does not repair. <code>sanitize</code> on{" "}
             <code>vacation.png</code> returns <code>{b.image.sanitize.status}</code> and leaves
             the file untouched, so quarantine flagged images instead of cleaning them.
           </p>
@@ -384,13 +412,13 @@ const ciSnippet = [
         </p>
       </aside>
       <p>
-        Saying so is deliberate. A tool that claims to find everything teaches teams to stop
-        looking. This one is alpha, and it tells you where its edges are.
+        A tool that claims to find everything teaches teams to stop looking. StegGuard is alpha,
+        and this post lists where it falls short.
       </p>
 
       <h2 id="ci"><a class="anchor" href="#ci">Putting it in the pipeline</a></h2>
       <p>
-        <code>stegguard detect</code> exits <code>1</code> when it flags something, <code>0</code>
+        <code>stegguard detect</code> exits <code>1</code> when it flags something, <code>0</code>{" "}
         when the scan is clean, and <code>2</code> when it could not finish. That is all a CI job
         needs. Here is the control file from this post, which a pipeline would let through:
       </p>
@@ -419,9 +447,15 @@ const ciSnippet = [
       </div>
 
       <p>
-        What you see is not always what you execute. Scan files you did not write before you
-        trust them, decode what is flagged, and keep the originals so you can show your work.
+        Scan files you did not write before you trust them, decode what is flagged, and keep the originals so you can show your work.
       </p>
+
+      <h2 id="sources"><a class="anchor" href="#sources">Sources</a></h2>
+      <ul class="post-list">
+        {sources.map((s) => (
+          <li>{s.who}, <a href={s.href}>{s.title}</a>{s.when && ` (${s.when})`}</li>
+        ))}
+      </ul>
 
       <p class="post-back"><a href="/docs">Read the StegGuard CLI reference</a> or <a href="/demo">see it run on real samples</a>.</p>
     </main>
