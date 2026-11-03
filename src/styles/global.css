@@ -173,7 +173,7 @@ code {
   font-weight: 600;
   font-size: 1.15rem;
 }
-.brand img { border-radius: 3px; }
+.brand .mark { flex: none; }
 
 .top__nav { display: flex; align-items: center; gap: 0.25rem; }
 
