@@ -170,12 +170,19 @@ const useCases = [
       </dl>
     </section>
 
-    <section class="closing wrap">
-      <div>
-        <p>Everything on this page ships in the open-source package. It is alpha software, so treat what it reports as evidence to check, not a final verdict.</p>
-        <p><a href="https://github.com/stegguard/stegguard">Read the source on GitHub</a></p>
-      </div>
-      <img src="/images/steg_banner.png" alt="StegGuard logo: a stag inside a magnifying glass held over binary digits, captioned 'Uncovering hidden data'" width="630" height="276" loading="lazy" />
+    <section class="closing wrap" aria-labelledby="closing-h">
+      <h2 id="closing-h">Read the source before you trust it.</h2>
+      <p class="section-lede">StegGuard is alpha software. Treat what it reports as evidence to check, not a final verdict.</p>
+      <dl class="facts">
+        <div><dt>License</dt><dd>Apache-2.0</dd></div>
+        <div><dt>Dependencies</dt><dd>Python standard library only (Pillow is optional, for images)</dd></div>
+        <div><dt>Network</dt><dd>Offline by default</dd></div>
+        <div><dt>Tests</dt><dd><a href="https://github.com/stegguard/stegguard/actions">Run in CI on every push and pull request</a></dd></div>
+      </dl>
+      <p class="closing__actions">
+        <a class="btn btn--solid" href="https://github.com/stegguard/stegguard">Read the source</a>
+        <a class="btn" href="https://github.com/stegguard/stegguard/security/policy">Security policy</a>
+      </p>
     </section>
   </main>
 
