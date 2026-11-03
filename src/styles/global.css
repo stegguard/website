@@ -37,6 +37,15 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
+  /* Type scale. Serif is for headings and the brand, sans for reading and controls,
+   * mono for code and the small labels around it. */
+  --text-label: 0.78rem;
+  --text-code: 0.85rem;
+  --text-sm: 0.9rem;
+  --text-ui: 0.95rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.25rem;
+
   --radius: 4px;
   --gutter: clamp(1rem, 4vw, 2rem);
   --top-h: 3.75rem;
@@ -85,7 +94,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 400 1.125rem/1.6 var(--font-body);
+  font: 400 var(--text-base)/1.6 var(--font-body);
   overflow-wrap: break-word;
 }
 
@@ -131,6 +140,26 @@ code {
 }
 
 .muted { color: var(--muted); }
+
+/* One style for every small label: eyebrows, breadcrumbs, file names, step and
+ * technique numbers, table heads, post meta and badges. */
+.eyebrow, .crumb, .post-meta, .post-tags li, .code__head, .specimen__file,
+.sandbox__label, .sandbox__head, .step__num, .technique__num, .spec thead th,
+.facts dt, .fields__meta, .toc__label, .toc-inline summary, .sev {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+/* One size and weight for every text button. */
+.btn, .specimen__toggle, .sandbox__sample, .integ__tab {
+  font-family: var(--font-body);
+  font-size: var(--text-ui);
+  font-weight: 500;
+  line-height: 1;
+}
 
 .wrap {
   width: 100%;
@@ -194,7 +223,7 @@ code {
   border-radius: var(--radius);
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
 }
 .top__nav a[aria-current="page"] { color: var(--text); }
 /* One hover treatment for every control in the bar: links, GitHub and the theme toggle. */
@@ -223,7 +252,7 @@ code {
 /* Four nav items plus the brand get tight on 320px screens. */
 @media (max-width: 379px) {
   .brand { font-size: 1rem; }
-  .top__nav a { padding-inline: 0.4rem; font-size: 0.9rem; }
+  .top__nav a { padding-inline: 0.4rem; font-size: var(--text-sm); }
 }
 
 .theme {
@@ -260,7 +289,6 @@ code {
   min-height: 2.25rem;
   padding-left: 0.9rem;
   border-bottom: 1px solid var(--code-border);
-  font: 500 0.75rem/1 var(--font-mono);
   color: var(--tk-com);
 }
 
@@ -282,7 +310,7 @@ code {
   padding: 0.9rem;
   overflow-x: auto;
   color: var(--code-text);
-  font: 0.85rem/1.65 var(--font-mono);
+  font: var(--text-code)/1.65 var(--font-mono);
   tab-size: 2;
 }
 
@@ -303,14 +331,12 @@ code {
 
 .eyebrow {
   margin-bottom: 1rem;
-  font: 500 0.8rem/1 var(--font-mono);
   color: var(--muted);
-  letter-spacing: 0.02em;
 }
 
 .lede {
   margin: 1.25rem 0 2rem;
-  font-size: 1.25rem;
+  font-size: var(--text-lg);
   color: var(--muted);
 }
 
@@ -352,7 +378,7 @@ code {
   border-bottom: 1px solid var(--border);
 }
 
-.specimen__file { font: 500 0.78rem/1 var(--font-mono); color: var(--muted); }
+.specimen__file { color: var(--muted); }
 
 .specimen__toggle {
   min-height: 44px;
@@ -361,7 +387,6 @@ code {
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-  font: 500 0.875rem/1 var(--font-body);
   cursor: pointer;
 }
 .specimen__toggle:hover { border-color: var(--text); }
@@ -370,7 +395,9 @@ code {
 .specimen__text {
   margin: 0;
   padding: 1.5rem 1.1rem 1.25rem;
-  font: 400 clamp(1.3rem, 1.5vw + 1rem, 1.65rem)/1.55 var(--font-display);
+  font: 400 var(--text-base)/1.7 var(--font-mono);
+  /* Specimens are lines of real files, so keep their indentation. */
+  white-space: pre-wrap;
 }
 
 .hid {
@@ -381,7 +408,7 @@ code {
   border-radius: 3px;
   background: var(--found-soft);
   color: var(--found);
-  font: 600 0.5em/1 var(--font-mono);
+  font: 600 0.7em/1 var(--font-mono);
   vertical-align: 0.3em;
   white-space: nowrap;
 }
@@ -389,7 +416,7 @@ code {
 .specimen__note {
   margin: 0;
   padding: 0 1.1rem 1.25rem;
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
   color: var(--muted);
 }
 .specimen__after { display: none; }
@@ -427,7 +454,6 @@ code {
 .sandbox__label, .sandbox__head {
   display: block;
   margin: 0 0 0.5rem;
-  font: 500 0.78rem/1.2 var(--font-mono);
   color: var(--muted);
 }
 .sandbox__text {
@@ -439,7 +465,7 @@ code {
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-  font: 400 1.05rem/1.55 var(--font-display);
+  font: 400 var(--text-base)/1.55 var(--font-body);
   resize: vertical;
 }
 .sandbox__bar {
@@ -459,23 +485,22 @@ code {
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-  font: 500 0.875rem/1 var(--font-body);
   cursor: pointer;
 }
 .sandbox__sample:hover { border-color: var(--text); }
 .sandbox__sample[aria-pressed="true"] { background: var(--surface-2); border-color: var(--text); }
-.sandbox__privacy { margin: 0; font-size: 0.85rem; color: var(--muted); }
+.sandbox__privacy { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 
 .sandbox__seen {
   margin: 0 0 0.75rem;
-  font: 400 clamp(1.15rem, 1vw + 1rem, 1.4rem)/1.8 var(--font-display);
+  font: 400 var(--text-lg)/1.8 var(--font-body);
   overflow-wrap: anywhere;
 }
 .sandbox .hid { display: inline-block; }
 .sandbox .hid--glyph { font: inherit; vertical-align: baseline; margin-inline: 0.05em; padding: 0 0.2em; }
-.sandbox__findings { margin: 0; padding-left: 1.25rem; font-size: 0.95rem; }
+.sandbox__findings { margin: 0; padding-left: 1.25rem; font-size: var(--text-ui); }
 .sandbox__findings li { margin-bottom: 0.4rem; max-width: 60ch; }
-.sandbox__clean { margin: 0; font-size: 0.95rem; color: var(--muted); }
+.sandbox__clean { margin: 0; font-size: var(--text-ui); color: var(--muted); }
 
 /* ---------- integrations ---------- */
 
@@ -496,7 +521,6 @@ code {
   border-radius: var(--radius) var(--radius) 0 0;
   background: none;
   color: var(--muted);
-  font: 500 0.95rem/1 var(--font-body);
   cursor: pointer;
 }
 .integ__tab:hover { color: var(--text); }
@@ -506,7 +530,7 @@ code {
 .integ__panel[hidden] { display: none; }
 .integ.is-tabs .integ__panel { margin-top: 0; }
 .integ.is-tabs .integ__title { display: none; }
-.integ__note { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.95rem; }
+.integ__note { margin: 0.75rem 0 0; color: var(--muted); font-size: var(--text-ui); }
 .integ.is-tabs .integ__note { margin-top: 1rem; }
 .integ__panel .code { margin: 0.75rem 0 0; }
 
@@ -514,7 +538,7 @@ code {
 
 main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 
-.section-lede { color: var(--muted); font-size: 1.1rem; }
+.section-lede { color: var(--muted); }
 
 .steps__list { list-style: none; margin: 2rem 0 0; padding: 0; }
 
@@ -532,7 +556,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 
 .step__num {
   margin-bottom: 0.5rem;
-  font: 500 0.8rem/1 var(--font-mono);
   color: var(--muted);
 }
 
@@ -542,7 +565,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   width: 100%;
   min-width: 34rem;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: var(--text-ui);
 }
 .spec th, .spec td {
   padding: 0.75rem 1rem 0.75rem 0;
@@ -553,7 +576,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 .spec thead th {
   padding-block: 0.55rem;
   background: var(--surface);
-  font: 500 0.75rem/1.3 var(--font-mono);
   color: var(--muted);
 }
 .spec thead th:first-child, .spec tbody th { padding-left: 0.75rem; }
@@ -578,8 +600,8 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   background: var(--surface);
 }
 .cap h3 { font-size: 1.2rem; margin-bottom: 0.4rem; }
-.cap p { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.95rem; }
-.cap a { display: inline-flex; align-items: center; min-height: 44px; margin-top: auto; font-size: 0.95rem; }
+.cap p { margin: 0 0 0.75rem; color: var(--muted); font-size: var(--text-ui); }
+.cap a { display: inline-flex; align-items: center; min-height: 44px; margin-top: auto; font-size: var(--text-ui); }
 .cap__visual {
   display: grid;
   align-items: center;
@@ -589,10 +611,10 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   border-radius: var(--radius);
   background: var(--bg);
   border: 1px solid var(--border);
-  font: 0.85rem/1.5 var(--font-mono);
+  font: var(--text-code)/1.5 var(--font-mono);
   overflow: hidden;
 }
-.cap__text { margin: 0; font: 400 1.25rem/1.2 var(--font-display); }
+.cap__text { margin: 0; font-size: var(--text-lg); line-height: 1.2; }
 .cap__found, .cap__grid .is-found, .cap__tree .is-found, .cap__rows .is-found {
   background: var(--found-soft);
   color: var(--found);
@@ -638,7 +660,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   padding-block: 1.25rem;
   border-block: 1px solid var(--border);
 }
-.facts dt { margin-bottom: 0.2rem; font: 500 0.78rem/1.3 var(--font-mono); color: var(--muted); }
+.facts dt { margin-bottom: 0.2rem; color: var(--muted); }
 .facts dd { margin: 0; }
 .closing__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0; }
 
@@ -650,7 +672,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   border: 1px solid var(--text);
   border-radius: var(--radius);
   color: var(--text);
-  font-weight: 500;
   text-decoration: none;
 }
 .btn:hover { background: var(--surface-2); }
@@ -664,7 +685,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 .docs__main h1 { font-size: clamp(2rem, 4vw + 0.5rem, 3rem); }
 .docs__main h2 { margin-top: 3rem; }
 
-.crumb { margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--muted); }
+.crumb { margin-bottom: 0.75rem; color: var(--muted); }
 .crumb a { color: var(--muted); }
 
 .anchor { color: inherit; text-decoration: none; }
@@ -696,7 +717,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 .fields li p + p { margin-top: 0.3rem; color: var(--muted); }
 .fields__sig { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; }
 .fields__sig code { color: var(--text); background: var(--surface-2); border-color: transparent; font-weight: 600; }
-.fields__meta { font: 0.8rem var(--font-mono); color: var(--muted); }
+.fields__meta { color: var(--muted); }
 
 .cards { display: grid; gap: 1rem; margin-top: 1.25rem; }
 .card {
@@ -709,7 +730,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 }
 .card:hover { border-color: var(--text); }
 .card__title { display: block; margin-bottom: 0.25rem; font-weight: 600; color: var(--text); }
-.card__body { display: block; font-size: 0.95rem; color: var(--muted); }
+.card__body { display: block; font-size: var(--text-ui); color: var(--muted); }
 
 .toc-inline {
   margin: 1.5rem 0;
@@ -722,13 +743,12 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   align-items: center;
   padding-inline: 1rem;
   cursor: pointer;
-  font-weight: 500;
 }
 .toc-inline ul { margin: 0; padding: 0 1rem 0.75rem 2rem; }
 .toc-inline a { display: inline-block; padding-block: 0.4rem; }
 
 .toc { display: none; }
-.toc__label { margin-bottom: 0.5rem; font: 500 0.72rem/1 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.toc__label { margin-bottom: 0.5rem; color: var(--muted); }
 .toc ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--border); }
 .toc a {
   display: block;
@@ -737,7 +757,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   border-left: 2px solid transparent;
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }
 .toc a:hover { color: var(--text); }
 .toc a[aria-current] { color: var(--text); border-left-color: var(--text); }
@@ -751,9 +771,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   display: inline-block;
   padding: 0.1rem 0.5rem;
   border-radius: 3px;
-  font: 600 0.75rem/1.4 var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 .sev--critical, .sev--high { color: var(--found); background: var(--found-soft); }
 .sev--medium { color: var(--warn); background: var(--warn-bg); }
@@ -789,8 +806,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 
 .post-sub {
   margin: 0.75rem 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.2rem, 1vw + 1rem, 1.45rem);
+  font-size: var(--text-lg);
   color: var(--muted);
 }
 
@@ -799,7 +815,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   flex-wrap: wrap;
   gap: 0.25rem 0.6rem;
   margin: 1.25rem 0 0;
-  font: 500 0.8rem/1.4 var(--font-mono);
   color: var(--muted);
 }
 
@@ -816,7 +831,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
-  font: 500 0.72rem/1.2 var(--font-mono);
   color: var(--muted);
 }
 
@@ -833,10 +847,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   margin: 0 0 0.6rem;
   font-size: clamp(1.15rem, 0.5vw + 1rem, 1.3rem);
 }
-.technique__num {
-  font: 600 0.8rem/1 var(--font-mono);
-  color: var(--muted);
-}
+.technique__num { color: var(--muted); }
 .technique p { margin-bottom: 0.6rem; }
 .technique p:last-child { margin-bottom: 0; }
 .defense { color: var(--muted); }
@@ -858,7 +869,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   max-width: 72rem;
   margin: 0 auto;
   padding: 1.5rem var(--gutter) 2rem;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 .foot a { color: var(--muted); }
