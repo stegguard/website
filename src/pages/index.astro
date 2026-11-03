@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import Sandbox from "../components/Sandbox.astro";
+import Integrations from "../components/Integrations.astro";
 import demo from "../data/demo.json";
 import { countWord } from "../lib/words";
 import { pipInstall, RELEASE, PYPI_URL } from "../lib/install";
@@ -112,6 +113,8 @@ const useCases = [
         ))}
       </ol>
     </section>
+
+    <Integrations />
 
     <section class="wrap" id="detects" aria-labelledby="detects-h">
       <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>

@@ -1,0 +1,133 @@
+---
+import CodeBlock from "./CodeBlock.astro";
+import { pipInstall } from "../lib/install";
+
+// Four places hidden text gets in. Every panel is in the markup, so with
+// JavaScript off they simply stack; the script turns them into tabs.
+type Line = { t: "cmd" | "out" | "hit" | "code"; s: string };
+const code = (src: string): Line[] => src.trim().split("\n").map((s) => ({ t: "code", s }));
+
+const tabs = [
+  {
+    id: "github-actions",
+    label: "GitHub Actions",
+    file: ".github/workflows/stegguard.yml",
+    note: "Fails the pull request when any file in the checkout is flagged. Directories need -r to be scanned recursively.",
+    lines: code(`
+name: stegguard
+on: [pull_request]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: ${pipInstall()}
+      - run: stegguard detect . -r
+`),
+  },
+  {
+    id: "pre-commit",
+    label: "pre-commit",
+    file: ".pre-commit-config.yaml",
+    note: "A local hook, since the package doesn't ship a .pre-commit-hooks.yaml yet. pre-commit passes the staged file names.",
+    lines: code(`
+repos:
+  - repo: local
+    hooks:
+      - id: stegguard
+        name: stegguard detect
+        entry: stegguard detect
+        language: system
+        types: [text]
+`),
+  },
+  {
+    id: "python",
+    label: "Python",
+    file: "check_input.py",
+    note: "analyze_file takes a Path and returns a dict. total_hidden is set for text and binary files alike.",
+    lines: code(`
+from pathlib import Path
+from stegguard import analyze_file
+
+result = analyze_file(Path("scraped_page.html"))
+if result["total_hidden"]:
+    raise ValueError("hidden content in model input")
+`),
+  },
+  {
+    id: "cli",
+    label: "CLI",
+    file: "shell",
+    note: "The same three steps as the workflow above. Rewriting the original takes --in-place and --confirm together.",
+    lines: [
+      { t: "cmd", s: "$ stegguard detect report.md" },
+      { t: "cmd", s: "$ stegguard decode report.md" },
+      { t: "cmd", s: "$ stegguard sanitize report.md" },
+      { t: "cmd", s: "$ stegguard sanitize report.md --in-place --confirm" },
+    ] as Line[],
+  },
+].map((t) => ({
+  ...t,
+  // Copy the file as written; for the CLI, drop the "$ " prompts.
+  copy: t.lines.map((l) => l.s.replace(/^\$ /, "")).join("\n"),
+}));
+---
+
+<section class="wrap integ" id="integrations" aria-labelledby="integ-h" data-integ>
+  <h2 id="integ-h">Put it where hidden text gets in.</h2>
+  <p class="section-lede">Scan pull requests, commits, scraped pages and files before anyone, or any model, reads them.</p>
+
+  <div class="integ__tabs" role="tablist" aria-label="Integrations" hidden>
+    {tabs.map((t, i) => (
+      <button type="button" role="tab" class="integ__tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+    ))}
+  </div>
+
+  {tabs.map((t) => (
+    <div class="integ__panel" role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`}>
+      <h3 class="integ__title">{t.label}</h3>
+      <p class="integ__note">{t.note}</p>
+      <CodeBlock label={t.file} copy={t.copy} lines={t.lines} />
+    </div>
+  ))}
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-integ]").forEach((root) => {
+    const list = root.querySelector<HTMLElement>("[role=tablist]")!;
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[role=tab]"));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[role=tabpanel]"));
+    list.hidden = false;
+    root.classList.add("is-tabs");
+
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => {
+        t.setAttribute("aria-selected", String(i === j));
+        t.tabIndex = i === j ? 0 : -1;
+        panels[j].hidden = i !== j;
+      });
+      if (focus) tabs[i].focus();
+    };
+    select(0);
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(i));
+      tab.addEventListener("keydown", (e) => {
+        const last = tabs.length - 1;
+        const next =
+          e.key === "ArrowRight" ? (i === last ? 0 : i + 1)
+          : e.key === "ArrowLeft" ? (i === 0 ? last : i - 1)
+          : e.key === "Home" ? 0
+          : e.key === "End" ? last
+          : null;
+        if (next === null) return;
+        e.preventDefault();
+        select(next, true);
+      });
+    });
+  });
+</script>

@@ -269,6 +269,7 @@ code {
 .tk-flag { color: var(--tk-flag); }
 .tk-com { color: var(--tk-com); }
 .tk-out { color: var(--tk-com); }
+.tk-code { color: var(--code-text); }
 .tk-hit { color: var(--tk-hit); }
 
 /* ---------- hero ---------- */
@@ -440,6 +441,39 @@ code {
 .sandbox__findings { margin: 0; padding-left: 1.25rem; font-size: 0.95rem; }
 .sandbox__findings li { margin-bottom: 0.4rem; max-width: 60ch; }
 .sandbox__clean { margin: 0; font-size: 0.95rem; color: var(--muted); }
+
+/* ---------- integrations ---------- */
+
+.integ__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.integ__tabs[hidden] { display: none; }
+.integ__tab {
+  min-height: 44px;
+  padding: 0 1rem;
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: none;
+  color: var(--muted);
+  font: 500 0.95rem/1 var(--font-body);
+  cursor: pointer;
+}
+.integ__tab:hover { color: var(--text); }
+.integ__tab[aria-selected="true"] { background: var(--bg); border-color: var(--border); color: var(--text); box-shadow: inset 0 2px 0 var(--text); }
+
+.integ__panel { margin-top: 1.5rem; }
+.integ__panel[hidden] { display: none; }
+.integ.is-tabs .integ__panel { margin-top: 0; }
+.integ.is-tabs .integ__title { display: none; }
+.integ__note { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.95rem; }
+.integ.is-tabs .integ__note { margin-top: 1rem; }
+.integ__panel .code { margin: 0.75rem 0 0; }
 
 /* ---------- landing sections ---------- */
 
