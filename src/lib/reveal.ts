@@ -1,11 +1,12 @@
 // Splits a string into visible text and hidden-character runs for the hero
 // specimen. Runs of the same hidden kind collapse into one segment so 16
-// zero-width characters render as a single "16 zero-width" chip.
+// zero-width characters render as a single "16 zero-width" chip. Each hidden
+// segment keeps its `raw` characters so the page can emit the real thing.
 
 export type Segment =
   | { kind: "text"; text: string }
-  | { kind: "zwc"; count: number; label: string }
-  | { kind: "bidi"; codepoint: string; label: string };
+  | { kind: "zwc"; count: number; label: string; raw: string }
+  | { kind: "bidi"; codepoint: string; label: string; raw: string };
 
 const ZERO_WIDTH = new Set(["​", "‌", "‍", "⁠", "﻿"]);
 
@@ -30,13 +31,14 @@ export function segment(input: string): Segment[] {
     if (ZERO_WIDTH.has(ch)) {
       if (last?.kind === "zwc") {
         last.count++;
+        last.raw += ch;
         last.label = `${last.count} zero-width`;
       } else {
-        out.push({ kind: "zwc", count: 1, label: "1 zero-width" });
+        out.push({ kind: "zwc", count: 1, label: "1 zero-width", raw: ch });
       }
     } else if (ch in BIDI_NAMES) {
       // Each override is its own segment: two in a row are two separate controls.
-      out.push({ kind: "bidi", codepoint: hex(ch), label: `${hex(ch)} ${BIDI_NAMES[ch]}` });
+      out.push({ kind: "bidi", codepoint: hex(ch), label: `${hex(ch)} ${BIDI_NAMES[ch]}`, raw: ch });
     } else if (last?.kind === "text") {
       last.text += ch;
     } else {

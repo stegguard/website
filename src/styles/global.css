@@ -354,6 +354,9 @@ code {
 .specimen__after { display: none; }
 
 [data-revealed="true"] .hid { display: inline-block; }
+/* Real hidden characters stay in the DOM (copyable) until revealed; hiding the
+ * span drops them from bidi ordering, so overridden words flip back. */
+[data-revealed="true"] .raw { display: none; }
 [data-revealed="true"] .specimen__before { display: none; }
 [data-revealed="true"] .specimen__after { display: inline; }
 

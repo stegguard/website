@@ -13,35 +13,35 @@ test("an empty string produces no segments", () => {
 test("a run of mixed zero-width characters collapses into one counted segment", () => {
   assert.deepEqual(segment("a​‌‍⁠﻿b"), [
     { kind: "text", text: "a" },
-    { kind: "zwc", count: 5, label: "5 zero-width" },
+    { kind: "zwc", count: 5, label: "5 zero-width", raw: "​‌‍⁠﻿" },
     { kind: "text", text: "b" },
   ]);
 });
 
 test("a single zero-width character is labelled with a count of one", () => {
-  assert.deepEqual(segment("​"), [{ kind: "zwc", count: 1, label: "1 zero-width" }]);
+  assert.deepEqual(segment("​"), [{ kind: "zwc", count: 1, label: "1 zero-width", raw: "​" }]);
 });
 
 test("zero-width runs separated by text stay as separate segments", () => {
   assert.deepEqual(segment("​x​​"), [
-    { kind: "zwc", count: 1, label: "1 zero-width" },
+    { kind: "zwc", count: 1, label: "1 zero-width", raw: "​" },
     { kind: "text", text: "x" },
-    { kind: "zwc", count: 2, label: "2 zero-width" },
+    { kind: "zwc", count: 2, label: "2 zero-width", raw: "​​" },
   ]);
 });
 
 test("a right-to-left override is labelled with its code point and short name", () => {
   assert.deepEqual(segment("x‮y"), [
     { kind: "text", text: "x" },
-    { kind: "bidi", codepoint: "U+202E", label: "U+202E RLO" },
+    { kind: "bidi", codepoint: "U+202E", label: "U+202E RLO", raw: "‮" },
     { kind: "text", text: "y" },
   ]);
 });
 
 test("adjacent bidi controls are reported one per segment", () => {
   assert.deepEqual(segment("⁦⁩"), [
-    { kind: "bidi", codepoint: "U+2066", label: "U+2066 LRI" },
-    { kind: "bidi", codepoint: "U+2069", label: "U+2069 PDI" },
+    { kind: "bidi", codepoint: "U+2066", label: "U+2066 LRI", raw: "⁦" },
+    { kind: "bidi", codepoint: "U+2069", label: "U+2069 PDI", raw: "⁩" },
   ]);
 });
 
@@ -67,7 +67,14 @@ test("encoding a non-ASCII character throws instead of truncating it", () => {
 test("an encoded message segments back to one run with one zero-width per bit", () => {
   assert.deepEqual(segment(`ok${encodeZeroWidth("hi")}.`), [
     { kind: "text", text: "ok" },
-    { kind: "zwc", count: 16, label: "16 zero-width" },
+    { kind: "zwc", count: 16, label: "16 zero-width", raw: encodeZeroWidth("hi") },
     { kind: "text", text: "." },
   ]);
+});
+
+test("a hidden segment keeps the raw characters it was built from", () => {
+  const input = `a${encodeZeroWidth("hi")}b‮c`;
+  const raws = segment(input).flatMap((s) => (s.kind === "text" ? [] : [s.raw]));
+  assert.deepEqual(raws, [encodeZeroWidth("hi"), "‮"]);
+  assert.equal(segment(input).map((s) => (s.kind === "text" ? s.text : s.raw)).join(""), input);
 });

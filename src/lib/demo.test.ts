@@ -42,8 +42,10 @@ test("file names in the demo data are relative to the samples folder", () => {
 });
 
 test("the walkthrough line renders as its visible text followed by one zero-width run", () => {
+  const text = "- Faster startup on Windows.";
+  const run = data.walkthrough.line.slice(text.length);
   assert.deepEqual(segment(data.walkthrough.line), [
-    { kind: "text", text: "- Faster startup on Windows." },
-    { kind: "zwc", count: 296, label: "296 zero-width" },
+    { kind: "text", text },
+    { kind: "zwc", count: 296, label: "296 zero-width", raw: run },
   ]);
 });
