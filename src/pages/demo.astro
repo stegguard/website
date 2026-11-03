@@ -93,7 +93,7 @@ const toc = [
             {demo.files.map((f) => (
               <tr>
                 <th scope="row"><code>{f.file}</code></th>
-                <td><span class={`sev sev--${f.severity}`}>{f.severity}</span></td>
+                <td><span class={`sev sev--${f.severity}`}>{capitalize(f.severity)}</span></td>
                 <td>{notes[f.file] ?? ""}</td>
               </tr>
             ))}
