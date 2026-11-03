@@ -9,9 +9,12 @@
   --surface-2: #E9E6DB;
   --border: #DFD9CA;
   --text: #1F1E1D;
-  --muted: #71695C;
+  --muted: #5E574B;
   --accent: #B04A2C;
   --accent-soft: #F4E3D9;
+  /* Terracotta has one job: it marks something StegGuard found. */
+  --found: var(--accent);
+  --found-soft: var(--accent-soft);
 
   --code-bg: #21201C;
   --code-text: #EDEAE2;
@@ -20,6 +23,8 @@
   --tk-str: #A8C39A;
   --tk-com: #8A857A;
   --tk-flag: #D9B25F;
+  /* Flagged output lines: the terracotta, lightened to read on the always-dark panel. */
+  --tk-hit: #E8997A;
 
   --note: #4A6B8A;
   --note-bg: #E9EEF2;
@@ -45,7 +50,7 @@
   --surface-2: #2D2C27;
   --border: #3A382F;
   --text: #EDEAE2;
-  --muted: #A29C8E;
+  --muted: #B3ACA0;
   --accent: #E08D6D;
   --accent-soft: #3B2A22;
 
@@ -80,7 +85,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 400 1.0625rem/1.6 var(--font-body);
+  font: 400 1.125rem/1.6 var(--font-body);
   overflow-wrap: break-word;
 }
 
@@ -101,11 +106,11 @@ h2, h3, [id] { scroll-margin-top: calc(var(--top-h) + 1rem); }
 
 p { margin: 0 0 1rem; max-width: 65ch; }
 
-a { color: var(--accent); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a { color: var(--text); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
 a:hover { text-decoration-thickness: 2px; }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -187,7 +192,7 @@ code {
   font-size: 0.95rem;
 }
 .top__nav a:hover, .top__nav a[aria-current="page"] { color: var(--text); }
-.top__nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+.top__nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--text); }
 /* The footer links to the source, so the narrowest screens drop it here. */
 @media (max-width: 419px) {
   .top__nav .top__gh { display: none; }
@@ -264,7 +269,7 @@ code {
 .tk-flag { color: var(--tk-flag); }
 .tk-com { color: var(--tk-com); }
 .tk-out { color: var(--tk-com); }
-.tk-hit { color: var(--tk-flag); }
+.tk-hit { color: var(--tk-hit); }
 
 /* ---------- hero ---------- */
 
@@ -284,7 +289,7 @@ code {
 
 .lede {
   margin-top: 1.25rem;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   color: var(--muted);
 }
 
@@ -323,8 +328,8 @@ code {
   font: 500 0.875rem/1 var(--font-body);
   cursor: pointer;
 }
-.specimen__toggle:hover { border-color: var(--accent); color: var(--accent); }
-.specimen__toggle[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.specimen__toggle:hover { border-color: var(--text); }
+.specimen__toggle[aria-pressed="true"] { background: var(--surface-2); border-color: var(--text); }
 
 .specimen__text {
   margin: 0;
@@ -336,10 +341,10 @@ code {
   display: none;
   margin-inline: 0.15em;
   padding: 0.1em 0.4em;
-  border: 1px dashed var(--accent);
+  border: 1px dashed var(--found);
   border-radius: 3px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--found-soft);
+  color: var(--found);
   font: 600 0.5em/1 var(--font-mono);
   vertical-align: 0.3em;
   white-space: nowrap;
@@ -391,7 +396,7 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
 .step__num {
   margin-bottom: 0.5rem;
   font: 500 0.8rem/1 var(--font-mono);
-  color: var(--accent);
+  color: var(--muted);
 }
 
 .table-scroll { overflow-x: auto; margin: 1.25rem 0; }
@@ -482,7 +487,7 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
 .fields li p { margin: 0; }
 .fields li p + p { margin-top: 0.3rem; color: var(--muted); }
 .fields__sig { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; }
-.fields__sig code { color: var(--accent); background: var(--accent-soft); border-color: transparent; font-weight: 600; }
+.fields__sig code { color: var(--text); background: var(--surface-2); border-color: transparent; font-weight: 600; }
 .fields__meta { font: 0.8rem var(--font-mono); color: var(--muted); }
 
 .cards { display: grid; gap: 1rem; margin-top: 1.25rem; }
@@ -494,8 +499,8 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
   color: var(--text);
   text-decoration: none;
 }
-.card:hover { border-color: var(--accent); }
-.card__title { display: block; margin-bottom: 0.25rem; font-weight: 600; color: var(--accent); }
+.card:hover { border-color: var(--text); }
+.card__title { display: block; margin-bottom: 0.25rem; font-weight: 600; color: var(--text); }
 .card__body { display: block; font-size: 0.95rem; color: var(--muted); }
 
 .toc-inline {
@@ -527,7 +532,7 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
   font-size: 0.9rem;
 }
 .toc a:hover { color: var(--text); }
-.toc a[aria-current] { color: var(--accent); border-left-color: var(--accent); }
+.toc a[aria-current] { color: var(--text); border-left-color: var(--text); }
 
 /* ---------- demo ---------- */
 
@@ -542,7 +547,7 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
-.sev--critical, .sev--high { color: var(--accent); background: var(--accent-soft); }
+.sev--critical, .sev--high { color: var(--found); background: var(--found-soft); }
 .sev--medium { color: var(--warn); background: var(--warn-bg); }
 .sev--low { color: var(--note); background: var(--note-bg); }
 .sev--clean { color: var(--tip); background: var(--tip-bg); }
@@ -622,7 +627,7 @@ main > section + section { padding-top: clamp(3rem, 7vw, 5rem); }
 }
 .technique__num {
   font: 600 0.8rem/1 var(--font-mono);
-  color: var(--accent);
+  color: var(--muted);
 }
 .technique p { margin-bottom: 0.6rem; }
 .technique p:last-child { margin-bottom: 0; }
