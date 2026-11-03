@@ -303,6 +303,20 @@ code {
   color: var(--muted);
 }
 
+.hero__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.hero__intro .lede { margin-bottom: 0; }
+.hero__banner {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  aspect-ratio: 630 / 276;
+}
+
 .hero__install { max-width: 40rem; }
 .hero__install .code { margin-top: 0; }
 .hero__more { margin: 0; }
@@ -604,18 +618,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 }
 .uses dd { margin: 0; color: var(--muted); max-width: 52ch; }
 
-.closing {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 2rem;
-  align-items: center;
-  padding-bottom: clamp(3rem, 7vw, 5rem);
-}
-.closing img {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  aspect-ratio: 630 / 276;
-}
+.closing { padding-bottom: clamp(3rem, 7vw, 5rem); }
 .facts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
@@ -853,6 +856,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 
 @media (min-width: 900px) {
   .sandbox { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .hero__intro { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
 }
 
 @media (min-width: 700px) {
@@ -863,7 +867,6 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
 @media (min-width: 900px) {
   .step { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; }
   .step .code { margin-top: 0; }
-  .closing { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 4rem; }
 }
 
 @media (min-width: 1100px) {
