@@ -771,6 +771,7 @@ main > section ~ section { padding-top: clamp(3rem, 7vw, 5rem); }
   display: inline-block;
   padding: 0.1rem 0.5rem;
   border-radius: 3px;
+  white-space: nowrap;
 }
 .sev--critical, .sev--high { color: var(--found); background: var(--found-soft); }
 .sev--medium { color: var(--warn); background: var(--warn-bg); }
