@@ -10,7 +10,7 @@
   --border: #DFD9CA;
   --text: #1F1E1D;
   --muted: #5E574B;
-  --accent: #B04A2C;
+  --accent: #A3421F;
   --accent-soft: #F4E3D9;
   /* Terracotta has one job: it marks something StegGuard found. */
   --found: var(--accent);
@@ -21,7 +21,7 @@
   --code-border: #38362E;
   --tk-cmd: #8FB8F0;
   --tk-str: #A8C39A;
-  --tk-com: #8A857A;
+  --tk-com: #9A958A;
   --tk-flag: #D9B25F;
   /* Flagged output lines: the terracotta, lightened to read on the always-dark panel. */
   --tk-hit: #E8997A;
@@ -114,6 +114,9 @@ a:hover { text-decoration-thickness: 2px; }
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* The code panels are always dark, so the page ring would vanish on them in light mode. */
+.code :focus-visible { outline-color: var(--code-text); outline-offset: -3px; }
 
 img { max-width: 100%; height: auto; }
 
