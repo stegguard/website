@@ -272,7 +272,7 @@ code {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
-  padding-block: clamp(2.5rem, 7vw, 5.5rem) clamp(3rem, 7vw, 5rem);
+  padding-block: clamp(2.5rem, 7vw, 5.5rem) clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .eyebrow {
