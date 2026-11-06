@@ -87,36 +87,36 @@ const useCases = [
 <Layout>
   <main id="content">
     <section class="hero wrap">
-      <div class="hero__intro">
-        <div>
-          <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
-          <h1>Your text has characters you can't see.</h1>
-          <p class="lede">
-            StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
-            channels and watermark signals. If it finds a hidden message it can decode it, and it
-            writes a clean copy without touching your original. Python standard library only, offline
-            by default.
-          </p>
-        </div>
-        <img class="hero__banner" src="/images/steg_banner.png" alt="StegGuard logo: a stag inside a magnifying glass held over binary digits, captioned 'Uncovering hidden data'" width="630" height="276" fetchpriority="high" />
-      </div>
+      <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
+      <h1>Your text has characters you can't see.</h1>
+      <p class="lede">
+        StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
+        channels and watermark signals. If it finds a hidden message it can decode it, and it
+        writes a clean copy without touching your original. Python standard library only, offline
+        by default.
+      </p>
+      <p class="hero__actions">
+        <a class="btn btn--solid" href="#install">Install StegGuard</a>
+        <a class="btn" href="/demo">See it run on {countWord(demo.total_files)} sample files</a>
+        <a class="btn btn--ghost" href="/docs">CLI reference</a>
+      </p>
 
       <Sandbox />
 
-      <div class="hero__install">
+      <div class="hero__install" id="install">
         <CodeBlock label="shell" copy={installCmd} lines={[{ t: "cmd", s: installCmd }]} />
-        <p class="hero__more"><a href="/demo">See it run on {countWord(demo.total_files)} sample files</a> · <a href="/docs">CLI reference</a></p>
       </div>
     </section>
 
     <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">
+      <span class="section-num">01 / How it works</span>
       <h2 id="steps-h">One workflow instead of several one-off tools.</h2>
       <p class="section-lede">Detect, decode, then sanitize a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
       <ol class="steps__list">
         {steps.map((step, i) => (
           <li class="step" id={step.verb.toLowerCase()}>
             <div class="step__text">
-              <p class="step__num">0{i + 1} · {step.verb}</p>
+              <p class="step__num">0{i + 1} / {step.verb}</p>
               <h3>{step.title}</h3>
               <p>{step.caption.split(/(--[a-z-]+|report\.sanitized\.md)/).map((part, j) => j % 2 ? <code>{part}</code> : part)}</p>
             </div>
@@ -129,6 +129,7 @@ const useCases = [
     <Integrations />
 
     <section class="wrap" id="detects" aria-labelledby="detects-h">
+      <span class="section-num">03 / Coverage</span>
       <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>
       <div class="caps">
         {specs.map((c) => (
@@ -164,6 +165,7 @@ const useCases = [
     </section>
 
     <section class="wrap" id="use-cases" aria-labelledby="uses-h">
+      <span class="section-num">04 / Use cases</span>
       <h2 id="uses-h">Where it fits</h2>
       <dl class="uses">
         {useCases.map((u) => (
@@ -176,6 +178,7 @@ const useCases = [
     </section>
 
     <section class="closing wrap" aria-labelledby="closing-h">
+      <span class="section-num">05 / Trust</span>
       <h2 id="closing-h">Read the source before you trust it.</h2>
       <p class="section-lede">StegGuard is alpha software. Treat what it reports as evidence to check, not a final verdict.</p>
       <dl class="facts">
