@@ -33,6 +33,7 @@ src/lib/highlight.ts       minimal shell highlighter for code panels
 src/pages/demo.astro       demo: walkthrough of one sample plus the full report
 src/pages/blog.astro       blog: single-page article with an on-page TOC
 scripts/build_demo.py      regenerates public/demo/report.html and src/data/demo.json
+scripts/build_blog.py      regenerates src/data/blog.json (every output block on /blog)
 src/styles/global.css      theme tokens (dark default + light) and component styles
 public/                    static assets (images)
 astro.config.mjs           Astro config; `site` comes from SITE_URL
@@ -43,14 +44,26 @@ astro.config.mjs           Astro config; `site` comes from SITE_URL
 
 The Resource limits and Platform support tables (and the limits example command) on `/docs` are parsed at build time from `../stegguard-oss/docs/resource-limits.md` and `platform-support.md`. Edit those files, not the page. The build fails with a clear error if they are missing, so build from inside the monorepo.
 
-## Demo page
+## Demo and blog output
 
-`/demo` shows a real StegGuard run over the files in [stegguard/samples](https://github.com/stegguard/samples), checked out at `../../stegno_samples`. The HTML report (`public/demo/report.html`) and the page's numbers (`src/data/demo.json`) are generated, then committed, so the deploy needs neither the samples nor Python. To refresh them after changing the samples or the report generator:
+`/demo` shows a real StegGuard run over the files in [stegguard/samples](https://github.com/stegguard/samples). `/blog` shows real output for sample files the script writes itself. The generated files (`public/demo/report.html`, `src/data/demo.json`, `src/data/blog.json`) are committed, so the deploy needs neither the samples nor Python.
+
+Regenerate both after a release, so the pages show the version `RELEASE` advertises. Run them against that PyPI release, not the `../stegguard-oss` checkout, which may be older or carry unreleased changes:
 
 ```sh
-python3 scripts/build_demo.py   # needs uv and ../stegguard-oss
-npm test                        # src/lib/demo.test.ts checks the output
+uv tool install stegguard==0.5.0     # or a clean venv; Python 3.12 to 3.14
+stegguard --version                  # check PATH picks up this one, not an older install
+git clone https://github.com/stegguard/samples ../../stegno_samples   # first time only
+
+python3 scripts/build_demo.py --stegguard stegguard
+python3 scripts/build_blog.py        # uses `stegguard` from PATH by default
+npm test                             # src/lib/demo.test.ts checks the demo output
 ```
+
+- `--stegguard` takes the CLI itself (a name on PATH or a path), or a uv project directory, which runs through `uv run`. Without it, `build_demo.py` runs `../stegguard-oss`. `--samples` points `build_demo.py` at another samples checkout.
+- `build_blog.py` resets the post date (`generated` in `blog.json`) to the day of the run. Set it back to the publish date before committing, unless the post should show a new date.
+- After regenerating, read the blog's prose around anything that changed. The output blocks update on their own, but the sentences about them don't.
+- Both scripts run on Windows as well as POSIX systems, and always write forward-slash paths and LF line endings. Report element ids hash the file paths, so a Windows run gives different ids from a POSIX one, but the same ids on every rerun.
 
 ## Deploy (GitHub Pages + custom domain)
 

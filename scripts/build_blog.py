@@ -150,7 +150,7 @@ def main() -> None:
         data["access"]["line"] = (work / "access.py").read_text(encoding="utf-8").splitlines()[2]
 
     out = SITE / "src" / "data" / "blog.json"
-    out.write_text(json.dumps(data, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    out.write_text(json.dumps(data, indent=2, ensure_ascii=True) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {out.relative_to(SITE)} (stegguard {version})")
 
 

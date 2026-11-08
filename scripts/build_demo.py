@@ -9,13 +9,17 @@ and writes:
 
 Run from the site root:
 
-    python3 scripts/build_demo.py [--samples DIR] [--stegguard DIR]
+    python3 scripts/build_demo.py [--samples DIR] [--stegguard DIR_OR_EXE]
+
+--stegguard is either a uv project directory (a source checkout, run through
+`uv run`) or the stegguard executable itself, e.g. `stegguard` from PATH.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -41,17 +45,30 @@ SAMPLES = [
 WALKTHROUGH = "release_notes.md"
 HIDDEN = ("\u200b", "\u200c", "\u200d")
 
+# UTF-8 both ways, or Windows decodes the output as cp1252 and fails on the
+# report's symbols. A fixed hash seed keeps the report's element ids (hashes of
+# file paths) the same from one run to the next.
+ENV = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8", "PYTHONHASHSEED": "0"}
+
 
 def run(stegguard: Path, cwd: Path, *args: str, ok=(0,)) -> str:
+    cmd = ["uv", "run", "--project", str(stegguard), "stegguard"] if stegguard.is_dir() else [str(stegguard)]
     proc = subprocess.run(
-        ["uv", "run", "--project", str(stegguard), "stegguard", *args],
+        [*cmd, *args],
         cwd=cwd,
+        env=ENV,
         capture_output=True,
         text=True,
+        encoding="utf-8",
     )
     if proc.returncode not in ok:
         raise SystemExit(f"stegguard {' '.join(args)} exited {proc.returncode}:\n{proc.stderr}")
     return proc.stdout
+
+
+def posix(path: str) -> str:
+    """StegGuard prints paths with the OS separator; the site shows forward slashes."""
+    return path.replace("\\", "/")
 
 
 def main() -> None:
@@ -59,7 +76,8 @@ def main() -> None:
     parser.add_argument("--samples", type=Path, default=SITE.parent.parent / "stegno_samples")
     parser.add_argument("--stegguard", type=Path, default=SITE.parent / "stegguard-oss")
     args = parser.parse_args()
-    stegguard = args.stegguard.resolve()
+    # Resolve real paths (the scans run in a temp dir); leave a bare name for PATH lookup.
+    stegguard = args.stegguard.resolve() if args.stegguard.exists() else args.stegguard
 
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
@@ -78,13 +96,19 @@ def main() -> None:
 
         out_report = SITE / "public" / "demo" / "report.html"
         out_report.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(work / "report.html", out_report)
+        # The report holds each path as HTML text and inside a JSON blob (backslash
+        # escaped there). Bytes, so Windows keeps the report's own line endings.
+        report = (work / "report.html").read_bytes()
+        for name in SAMPLES:
+            for sep in (b"\\\\", b"\\"):
+                report = report.replace(b"samples" + sep + name.encode(), b"samples/" + name.encode())
+        out_report.write_bytes(report)
 
     severity_rank = {"critical": 0, "high": 1, "medium": 2, "low": 3, "clean": 4}
     files = sorted(
         (
             {
-                "file": r["file"].removeprefix("samples/"),
+                "file": posix(r["file"]).removeprefix("samples/"),
                 "severity": r["severity"],
                 "hidden": r["total_hidden"],
                 "trailing_lines": len(r["trailing_whitespace_lines"]),
@@ -114,12 +138,12 @@ def main() -> None:
             "occurrences": decoded["zero_width"]["occurrences"],
             "changes": sanitized["changes"],
             "original_preserved": sanitized["original_preserved"],
-            "sanitized_path": sanitized["sanitized_path"].removeprefix("samples/"),
+            "sanitized_path": posix(sanitized["sanitized_path"]).removeprefix("samples/"),
         },
     }
     out_data = SITE / "src" / "data" / "demo.json"
     out_data.parent.mkdir(parents=True, exist_ok=True)
-    out_data.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    out_data.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {out_report.relative_to(SITE)} and {out_data.relative_to(SITE)}")
 
 
