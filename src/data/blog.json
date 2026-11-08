@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-02",
-  "stegguard_version": "0.4.0",
+  "stegguard_version": "0.5.0",
   "deploy": {
     "detect": {
       "severity": "critical",
@@ -132,10 +132,12 @@
       "exit": 0
     },
     "sanitize": {
-      "status": "NO_OP_UNSUPPORTED",
-      "changed": false,
+      "status": "SANITIZED",
+      "changed": true,
       "output": "vacation.sanitized.png",
-      "changes": {}
+      "changes": {
+        "lsb_samples_cleared": 38243
+      }
     }
   },
   "clean": {
