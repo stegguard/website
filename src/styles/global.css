@@ -349,7 +349,7 @@ code {
   color: var(--muted);
 }
 .eyebrow::before { content: ""; display: inline-block; vertical-align: 1px; margin-right: var(--space-2); width: 6px; height: 6px; border-radius: 50%; background: var(--found); box-shadow: 0 0 8px var(--found); }
-.eyebrow a { color: var(--text); text-decoration: none; }
+.eyebrow a { color: var(--text); }
 @media (max-width: 519px) { .eyebrow { border-radius: var(--radius-panel); } }
 .hero h1 { max-width: 14ch; }
 .lede { margin: var(--space-6) 0 var(--space-8); max-width: 36rem; font-size: var(--text-lg); line-height: 1.5; letter-spacing: -0.01em; color: var(--muted); }
@@ -545,7 +545,7 @@ main > section ~ section { padding-top: clamp(96px, 12vw, 128px); }
 .docs__main .specimen { margin: var(--space-6) 0; }
 .docs__main .lede { margin-bottom: var(--space-12); }
 .crumb { margin-bottom: var(--space-3); color: var(--subtle); }
-.crumb a { color: var(--muted); text-decoration: none; }
+.crumb a { color: var(--muted); }
 .anchor { color: inherit; text-decoration: none; }
 .anchor::after { content: "#"; margin-left: 0.4em; color: var(--subtle); opacity: 0; }
 .anchor:hover::after, .anchor:focus-visible::after { opacity: 1; }
@@ -615,7 +615,7 @@ main > section ~ section { padding-top: clamp(96px, 12vw, 128px); }
 
 .foot { border-top: 1px solid var(--border); }
 .foot p { max-width: var(--wrap); margin: 0 auto; padding: var(--space-8) var(--gutter); font-size: var(--text-sm); color: var(--subtle); }
-.foot a { color: var(--muted); text-decoration: none; }
+.foot a { color: var(--muted); }
 .foot a:hover { color: var(--text); }
 
 /* ---------- wider screens ---------- */
