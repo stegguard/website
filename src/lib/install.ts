@@ -1,7 +1,7 @@
 // Single source for the PyPI package details shown on the site (markup + clipboard).
 // Bump RELEASE when a new version lands on https://pypi.org/project/stegguard/.
 export const PACKAGE = "stegguard";
-export const RELEASE = "0.4.0";
+export const RELEASE = "0.5.0";
 export const PYPI_URL = `https://pypi.org/project/${PACKAGE}/`;
 
 // `extra` adds an optional dependency group, e.g. "images" pulls in Pillow.

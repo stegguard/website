@@ -58,7 +58,7 @@ const matrix = [
   { n: "07", name: "SNOW whitespace", state: "yes", how: "detect, decode, sanitize" },
   { n: "08", name: "Mixed line endings", state: "yes", how: "detect, decode, sanitize (normalizes)" },
   { n: "09", name: "Trailing spaces in file names", state: "no", how: "StegGuard reads contents, not directory entries" },
-  { n: "10", name: "LSB pixel steganography", state: "yes", how: "detect (chi-square, RS, Sample Pair). Images are not rewritten." },
+  { n: "10", name: "LSB pixel steganography", state: "yes", how: "detect (chi-square, RS, Sample Pair), sanitize (clears pixel LSBs)" },
   { n: "11", name: "Steganalysis evasion", state: "partial", how: "Several statistical tests, but low-rate embedding can slip under them" },
   { n: "12", name: "Parser differentials", state: "partial", how: "Sanitizing removes inputs parsers disagree on, but it cannot audit your parsers" },
 ];
@@ -183,9 +183,9 @@ const ciSnippet = [
           <p class="defense">
             <strong>With StegGuard.</strong> The zero-width detector covers U+200B to U+200F,
             U+2060 to U+2064, U+00AD and U+FEFF, and sanitize removes them. Variation selectors
-            (U+FE00 to U+FE0F) and Unicode tag characters (U+E0000 block) are not flagged: we
-            tested both on 0.4.0 and got a clean result. We did not test the supplement range
-            (U+E0100 to U+E01EF) that os-info-checker-es6 used. Treat this row as partial.
+            (U+FE00 to U+FE0F), the supplement range (U+E0100 to U+E01EF) that
+            os-info-checker-es6 used, and Unicode tag characters (U+E0000 block) are not flagged:
+            we tested all three on 0.5.0 and got a clean result. Treat this row as partial.
           </p>
         </section>
 
@@ -363,11 +363,14 @@ const ciSnippet = [
           <CodeBlock label="stegguard detect photo.png (control)" lines={detectLines("photo.png", b.image.control)} />
           <p>
             The control matters as much as the hit: it shows the
-            test is not simply calling every image suspicious. Be clear about the limit, though.
-            For images StegGuard reports and does not repair. <code>sanitize</code> on{" "}
-            <code>vacation.png</code> returns <code>{b.image.sanitize.status}</code> and leaves
-            the file untouched, so quarantine flagged images instead of cleaning them.
+            test is not simply calling every image suspicious. <code>sanitize</code> on{" "}
+            <code>vacation.png</code> returns <code>{b.image.sanitize.status}</code> and writes a
+            copy with the lowest bit cleared in{" "}
+            {b.image.sanitize.changes.lsb_samples_cleared.toLocaleString("en-US")} samples, which
+            wipes an LSB payload. Rescanning that copy comes back clean. It leaves higher bits
+            alone, so a payload stored as whole bytes, like buildrunner-dev's, survives it.
           </p>
+          <CodeBlock label="stegguard sanitize (excerpt)" lines={changeLines("vacation.png", b.image.sanitize)} />
         </section>
 
         <section class="technique" id="steganalysis">

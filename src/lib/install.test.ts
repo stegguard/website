@@ -23,5 +23,5 @@ test("the PyPI link points at the stegguard project page", () => {
 });
 
 test("the advertised release is the version published on PyPI", () => {
-  assert.equal(RELEASE, "0.4.0");
+  assert.equal(RELEASE, "0.5.0");
 });

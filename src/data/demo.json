@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-29",
-  "stegguard_version": "0.3.0",
+  "generated": "2026-11-07",
+  "stegguard_version": "0.5.0",
   "total_files": 7,
   "flagged_files": 4,
   "files": [
@@ -61,9 +61,12 @@
     "occurrences": 296,
     "changes": {
       "zero_width_removed": 296,
+      "zero_width_preserved": 0,
       "bidi_removed": 0,
       "homoglyphs_replaced": 0,
+      "homoglyphs_preserved": 0,
       "trailing_whitespace_removed": 0,
+      "hard_breaks_preserved": 0,
       "line_endings_normalized": 0
     },
     "original_preserved": true,
