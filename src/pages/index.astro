@@ -2,7 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import FormatStrip from "../components/FormatStrip.astro";
-import LiveScan from "../components/LiveScan.astro";
 import Sandbox from "../components/Sandbox.astro";
 import Integrations from "../components/Integrations.astro";
 import demo from "../data/demo.json";
@@ -101,7 +100,7 @@ const useCases = [
           </p>
           <p class="hero__actions">
             <a class="btn btn--solid" href="#install">Install StegGuard</a>
-            <a class="btn" href="#live-scan">Try it on your text</a>
+            <a class="btn" id="live-scan" href="/scan/">Try it on your text</a>
             <a class="btn" href="/demo">See it run on {countWord(demo.total_files)} sample files</a>
             <a class="btn btn--ghost" href="/docs">CLI reference</a>
           </p>
@@ -109,7 +108,6 @@ const useCases = [
         <img class="hero__banner" src="/images/steg_banner.png" width="630" height="276" alt="StegGuard — Uncovering hidden data" />
       </div>
 
-      <LiveScan />
       <Sandbox />
 
       <div class="hero__install" id="install">

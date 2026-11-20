@@ -83,7 +83,7 @@ If `stegguard/stegguard` is private, add a read-only token as the `OSS_REPO_TOKE
 
 ## Browser text scan
 
-The homepage loads a same-origin Python WebAssembly runtime on demand and calls
+The scanner at `/scan/` loads a same-origin Python WebAssembly runtime on demand and calls
 StegGuard’s `analyze_text` in a dedicated worker. The scan accepts up to 32 KiB
 of UTF-8 text and limits the detector to 100 findings. Editing the input cancels
 the worker. Only static assets are requested.

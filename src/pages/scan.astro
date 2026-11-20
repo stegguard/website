@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LiveScan from "../components/LiveScan.astro";
+---
+
+<Layout title="Scan text · StegGuard" description="Check text for hidden Unicode characters and whitespace in your browser.">
+  <main id="content" class="wrap scan-page">
+    <LiveScan />
+  </main>
+</Layout>
+
+<style>
+  .scan-page { max-width: 52rem; padding-block: var(--space-8); }
+</style>
