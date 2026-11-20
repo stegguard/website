@@ -82,8 +82,8 @@ const toc = [
         ))}
       </ul>
 
-      <h2 id="formats"><a class="anchor" href="#formats">File support in the development version</a></h2>
-      <p>These capabilities describe changes since the 0.5.0 release.</p>
+      <h2 id="formats"><a class="anchor" href="#formats">File support in 0.6.0</a></h2>
+      <p>StegGuard 0.6.0 detects text markers inside DOCX, PPTX, XLSX, EPUB and ODT files. For BOM-marked UTF-16 text, findings refer to byte offsets in the original file.</p>
       <div class="table-scroll"><table class="spec">
         <thead><tr><th scope="col">Operation</th><th scope="col">Inputs and coverage</th></tr></thead>
         <tbody>
@@ -94,6 +94,8 @@ const toc = [
           <tr><th scope="row">Sanitize</th><td>Validated plain-text <code>.txt</code> and <code>.log</code> files in UTF-8 or BOM-marked UTF-16.</td></tr>
         </tbody>
       </table></div>
+      <p>Detection reports identify unsupported and skipped inputs. The JSON <code>completed_files</code> count excludes unsupported inspections. A malformed supported file makes the scan incomplete and returns exit code 2.</p>
+      <p>Version 0.6.0 removes binary rewriting, including the <code>metadata</code> and <code>lsb</code> sanitize channels. The sanitizer validates the staged text before writing the result.</p>
       <p>Read <code>sanitization_status</code> and <code>warnings</code> in the JSON output.
         <code>SANITIZED</code> and <code>PARTIAL</code> exit with 0. A partial rewrite leaves changes available through other text channels.
         <code>NOT_SUPPORTED</code> and <code>VALIDATION_FAILED</code> preserve the original and exit with 2.</p>
@@ -146,7 +148,7 @@ const toc = [
       </div>
 
       <h2 id="more"><a class="anchor" href="#more">More in the repo</a></h2>
-      <p>The development version’s detection baseline covers 38 synthetic fixtures. It flagged all 16 planted cases and returned clean results for all 22 benign files. Every scan completed.</p>
+      <p>The 0.6.0 detection baseline covers 38 synthetic fixtures. It flagged all 16 planted cases and returned clean results for all 22 benign files. Every scan completed.</p>
       <div class="cards">
         <a class="card" href="https://github.com/stegguard/stegguard/blob/main/docs/compatibility.md">
           <span class="card__title">Compatibility policy</span>

@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-07",
-  "stegguard_version": "0.5.0",
+  "generated": "2026-11-19",
+  "stegguard_version": "0.6.0",
   "total_files": 7,
   "flagged_files": 4,
   "files": [
@@ -59,6 +59,7 @@
     "decoded": "rotate the staging keys before friday",
     "confidence": 0.9,
     "occurrences": 296,
+    "sanitization_status": "SANITIZED",
     "changes": {
       "zero_width_removed": 296,
       "zero_width_preserved": 0,
@@ -70,7 +71,6 @@
       "line_endings_normalized": 0
     },
     "original_preserved": true,
-    "sanitized_path": "excerpt.sanitized.txt",
-    "sanitization_status": "SANITIZED"
+    "sanitized_path": "excerpt.sanitized.txt"
   }
 }
