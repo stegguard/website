@@ -48,16 +48,13 @@ The Resource limits and Platform support tables (and the limits example command)
 
 `/demo` shows a real StegGuard run over the files in [stegguard/samples](https://github.com/stegguard/samples). `/blog` shows real output for sample files the script writes itself. The generated files (`public/demo/report.html`, `src/data/demo.json`, `src/data/blog.json`) are committed, so the deploy needs neither the samples nor Python.
 
-The blog is a historical 0.5.0 walkthrough. Regenerate its excerpts with that release. The demo uses a plain-text copy of the displayed line for sanitization. Run them against that PyPI release, not the `../stegguard-oss` checkout, which may be older or carry unreleased changes:
+Regenerate the demo with StegGuard 0.6.0. The blog preserves a historical 0.5.0 walkthrough and uses its own pinned CLI.
 
 ```sh
-uv tool install stegguard==0.5.0     # or a clean venv; Python 3.12 to 3.14
-stegguard --version                  # check PATH picks up this one, not an older install
 git clone https://github.com/stegguard/samples ../../stegno_samples   # first time only
-
-python3 scripts/build_demo.py --stegguard stegguard
-python3 scripts/build_blog.py        # uses `stegguard` from PATH by default
-npm test                             # src/lib/demo.test.ts checks the demo output
+uv run --no-project --with stegguard==0.6.0 python scripts/build_demo.py --stegguard stegguard
+uv run --no-project --with stegguard==0.5.0 python scripts/build_blog.py
+npm test
 ```
 
 - `--stegguard` takes the CLI itself (a name on PATH or a path), or a uv project directory, which runs through `uv run`. Without it, `build_demo.py` runs `../stegguard-oss`. `--samples` points `build_demo.py` at another samples checkout.
