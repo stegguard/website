@@ -42,13 +42,13 @@ astro.config.mjs           Astro config; `site` comes from SITE_URL
 
 ## Docs content
 
-The Resource limits and Platform support tables (and the limits example command) on `/docs` are parsed at build time from `../stegguard-oss/docs/resource-limits.md` and `platform-support.md`. Edit those files, not the page. The build fails with a clear error if they are missing, so build from inside the monorepo.
+The Resource limits and Platform support tables (and the limits example command) on `/docs` are parsed at build time from `../stegguard-oss/docs/resource-limits.md` and `platform-support.md`. Edit those files, not the page. The build fails with a clear error if they are missing, so set `STEGGUARD_DOCS_DIR` to the docs directory for a standalone checkout.
 
 ## Demo and blog output
 
 `/demo` shows a real StegGuard run over the files in [stegguard/samples](https://github.com/stegguard/samples). `/blog` shows real output for sample files the script writes itself. The generated files (`public/demo/report.html`, `src/data/demo.json`, `src/data/blog.json`) are committed, so the deploy needs neither the samples nor Python.
 
-Regenerate both after a release, so the pages show the version `RELEASE` advertises. Run them against that PyPI release, not the `../stegguard-oss` checkout, which may be older or carry unreleased changes:
+The blog is a historical 0.5.0 walkthrough. Regenerate its excerpts with that release. The demo uses a plain-text copy of the displayed line for sanitization. Run them against that PyPI release, not the `../stegguard-oss` checkout, which may be older or carry unreleased changes:
 
 ```sh
 uv tool install stegguard==0.5.0     # or a clean venv; Python 3.12 to 3.14

@@ -64,10 +64,10 @@ if result["total_hidden"]:
     file: "shell",
     note: "The same three steps as the workflow above. Rewriting the original takes --in-place and --confirm together.",
     lines: [
-      { t: "cmd", s: "$ stegguard detect report.md" },
-      { t: "cmd", s: "$ stegguard decode report.md" },
-      { t: "cmd", s: "$ stegguard sanitize report.md" },
-      { t: "cmd", s: "$ stegguard sanitize report.md --in-place --confirm" },
+      { t: "cmd", s: "$ stegguard detect report.txt" },
+      { t: "cmd", s: "$ stegguard decode report.txt" },
+      { t: "cmd", s: "$ stegguard sanitize report.txt" },
+      { t: "cmd", s: "$ stegguard sanitize report.txt --in-place --confirm" },
     ] as Line[],
   },
 ].map((t) => ({

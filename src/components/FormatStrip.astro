@@ -1,0 +1,86 @@
+---
+const files = [
+  ["≡", "build.log"], ["▧", "logo.png"], ["¶", "report.pdf"],
+  ["⌘", "Dockerfile"], ["♫", "voice.wav"], ["▤", "release.zip"],
+  ["{}", "app.ts"], ["▷", "clip.mp4"], ["◇", "module.wasm"],
+];
+---
+<section class="formats" aria-label="Files StegGuard can scan">
+  <header><strong>Files StegGuard can scan</strong><button hidden type="button">Pause motion</button></header>
+  <div class="viewport">
+    <div class="track">
+      {[0, 1].map(copy => <ul aria-hidden={copy ? "true" : undefined}>
+        {files.map(([icon, name]) => <li><i aria-hidden="true">{icon}</i><code>{name}</code></li>)}
+      </ul>)}
+    </div>
+  </div>
+  <a href="/docs#formats">View format support ↗</a>
+</section>
+<style>
+  .formats { margin: 1.5rem 0 2rem; padding: 1rem 0; border-block: 1px solid var(--border); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  strong, button, a { font-size: .84rem; }
+  button { background: var(--surface); color: var(--muted); border: 1px solid var(--border); border-radius: .35rem; padding: .35rem .65rem; cursor: pointer; }
+  a { color: var(--muted); }
+  .viewport { overflow-x: auto; scrollbar-width: none; cursor: grab; touch-action: pan-y; user-select: none; mask-image: linear-gradient(90deg, transparent, black 2%, black 98%, transparent); }
+  .viewport:active { cursor: grabbing; }
+  .track, ul, li { display: flex; align-items: center; }
+  .track { width: max-content; padding-block: 1rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { gap: .6rem; padding: .55rem 1.3rem; border-inline-end: 1px solid var(--border); white-space: nowrap; }
+  .formats:not([data-moving]) .viewport { mask-image: none; cursor: auto; touch-action: auto; user-select: auto; }
+  .formats:not([data-moving]) .track { width: auto; }
+  .formats:not([data-moving]) ul { flex-wrap: wrap; }
+  .formats:not([data-moving]) ul[aria-hidden] { display: none; }
+  i { color: var(--accent); font: normal 1.1rem monospace; }
+</style>
+<script>
+  const root = document.querySelector<HTMLElement>(".formats")!;
+  const rail = root.querySelector<HTMLElement>(".viewport")!;
+  const group = rail.querySelector("ul")!;
+  const button = root.querySelector("button")!;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  let paused = reduced.matches;
+  let animation = 0;
+  let previous = 0;
+  let position = 0;
+  let drag: number | null = null;
+  let hovered = false;
+  function move(offset: number) {
+    const width = group.getBoundingClientRect().width;
+    if (!width) return;
+    position = ((position + offset) % width + width) % width;
+    rail.scrollLeft = position;
+  }
+  function frame(time: number) {
+    if (previous) move(Math.min(time - previous, 64) * .028);
+    previous = time;
+    animation = requestAnimationFrame(frame);
+  }
+  function update() {
+    cancelAnimationFrame(animation);
+    previous = 0;
+    root.toggleAttribute("data-moving", !paused);
+    button.textContent = paused ? "Play motion" : "Pause motion";
+    if (!paused && !hovered && drag === null && !document.hidden) animation = requestAnimationFrame(frame);
+  }
+  button.hidden = false;
+  button.onclick = () => { paused = !paused; update(); };
+  reduced.onchange = () => { paused = reduced.matches; update(); };
+  rail.onpointerenter = e => { hovered = e.pointerType === "mouse"; update(); };
+  rail.onpointerleave = () => { hovered = false; update(); };
+  rail.onpointerdown = e => {
+    if (paused || !e.isPrimary || e.button !== 0) return;
+    rail.setPointerCapture(e.pointerId);
+    drag = e.clientX;
+    update();
+  };
+  rail.onpointermove = e => {
+    if (drag === null || !rail.hasPointerCapture(e.pointerId)) return;
+    move(drag - e.clientX);
+    drag = e.clientX;
+  };
+  rail.onlostpointercapture = () => { drag = null; update(); };
+  document.addEventListener("visibilitychange", update);
+  update();
+</script>
