@@ -88,7 +88,8 @@ StegGuard’s `analyze_text` in a dedicated worker. The scan accepts up to 32 Ki
 of UTF-8 text and limits the detector to 100 findings. Editing the input cancels
 the worker. Only static assets are requested.
 
-The build stages the locked Pyodide runtime and packages the StegGuard checkout
-used for the docs. CI pins the detector revision containing the in-memory API.
-For a standalone checkout, set `STEGGUARD_DOCS_DIR` to that revision’s docs
-directory before running `npm run build` or `npm run dev -- --background`.
+The build stages the locked Pyodide runtime and the website-owned Python
+source archive `vendor/stegguard-browser.zip`. The snapshot comes from
+StegGuard revision `b2af5c64e5828381f62d820004b3d9f6b0ba1415` and includes
+the Apache license and project notice. The browser scanner builds independently
+of the upstream checkout. The docs page still uses the checkout described above.

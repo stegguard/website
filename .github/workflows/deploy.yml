@@ -26,7 +26,6 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: stegguard/stegguard
-          ref: b2af5c64e5828381f62d820004b3d9f6b0ba1415
           path: stegguard-oss
           # Needed only if stegguard/stegguard is private:
           # token: ${{ secrets.OSS_REPO_TOKEN }}
