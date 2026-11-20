@@ -101,7 +101,7 @@ const useCases = [
           </p>
           <p class="hero__actions">
             <a class="btn btn--solid" href="#install">Install StegGuard</a>
-            {import.meta.env.PUBLIC_LIVE_SCAN === "true" && <a class="btn" href="#live-scan">Try it on your text</a>}
+            <a class="btn" href="#live-scan">Try it on your text</a>
             <a class="btn" href="/demo">See it run on {countWord(demo.total_files)} sample files</a>
             <a class="btn btn--ghost" href="/docs">CLI reference</a>
           </p>
@@ -109,7 +109,7 @@ const useCases = [
         <img class="hero__banner" src="/images/steg_banner.png" width="630" height="276" alt="StegGuard — Uncovering hidden data" />
       </div>
 
-      {import.meta.env.PUBLIC_LIVE_SCAN === "true" && <LiveScan />}
+      <LiveScan />
       <Sandbox />
 
       <div class="hero__install" id="install">

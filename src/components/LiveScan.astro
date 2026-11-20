@@ -2,9 +2,9 @@
   <h2 id="live-scan-title">Scan an LLM response</h2>
   <label for="live-text">Text to scan</label>
   <textarea id="live-text" class="sandbox__text" rows="5" spellcheck="false" autocomplete="off" aria-describedby="scan-note"></textarea>
-  <p id="scan-note">Scan sends this text to StegGuard to check Unicode characters and whitespace. Limit 32 KiB of UTF-8 text.</p>
+  <p id="scan-note">StegGuard checks Unicode characters and whitespace in your browser. Your text stays on this device. Limit 32 KiB.</p>
   <button id="scan-submit" class="btn btn--solid" type="button" disabled>Scan with StegGuard</button>
-  <noscript>Enable JavaScript to submit a scan.</noscript>
+  <noscript>Enable JavaScript to run a scan.</noscript>
   <p id="scan-status" role="status"></p>
   <ul id="scan-findings"></ul>
 </section>
@@ -19,11 +19,18 @@
     const encoder = new TextEncoder();
     const tooLarge = (text: string) => text.length > limit || encoder.encode(text).length > limit;
     let previous = "";
-    let active: AbortController | undefined;
+    let active: Worker | undefined;
+    let timeout: number | undefined;
+
+    function stop() {
+      window.clearTimeout(timeout);
+      active?.terminate();
+      active = undefined;
+      submit.disabled = !input.value;
+    }
 
     input.addEventListener("input", () => {
-      active?.abort();
-      active = undefined;
+      stop();
       findings.replaceChildren();
       if (tooLarge(input.value)) {
         input.value = previous;
@@ -35,50 +42,43 @@
       submit.disabled = !input.value;
     });
 
-    submit.addEventListener("click", async () => {
+    submit.addEventListener("click", () => {
       if (active || !input.value || tooLarge(input.value)) return;
-      const controller = new AbortController();
-      active = controller;
       submit.disabled = true;
       findings.replaceChildren();
-      status.textContent = "Scanning…";
-      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      status.textContent = "Loading the local scanner…";
       try {
-        const response = await fetch("/api/scan", {
-          method: "POST", body: input.value, credentials: "omit", redirect: "error",
-          cache: "no-store", signal: controller.signal,
-          headers: { "Content-Type": "text/plain;charset=utf-8", "X-Stegguard-Scan": "1" },
-        });
-        if (!response.ok) {
-          const reasons: Record<number, string> = {
-            413: "Text exceeds 32 KiB.", 422: "This input contains unsupported text.",
-            429: "Too many scans. Try again shortly.",
-          };
-          throw new Error(reasons[response.status] ?? "Scan unavailable. Try again later.");
-        }
-        const report = await response.json();
-        if (active !== controller) return;
-        if (typeof report.complete !== "boolean" || !Array.isArray(report.findings) ||
-            report.findings.length > 101 || !report.findings.every((f: unknown) => typeof f === "string")) {
-          throw new Error("Unexpected scan response.");
-        }
-        for (const finding of report.findings) {
-          const item = document.createElement("li");
-          item.textContent = finding;
-          findings.append(item);
-        }
-        status.textContent = !report.complete ? "Scan incomplete. Findings are limited to the entries shown."
-          : report.findings.length ? `Scan complete. Findings: ${report.findings.length}.`
-          : "Scan complete. No matching Unicode or whitespace findings.";
-      } catch (error) {
-        if (active === controller) status.textContent = controller.signal.aborted
-          ? "Scan timed out." : error instanceof Error ? error.message : "Scan unavailable.";
-      } finally {
-        window.clearTimeout(timeout);
-        if (active === controller) {
-          active = undefined;
-          submit.disabled = !input.value;
-        }
+        const worker = new Worker("/scan-worker.js");
+        active = worker;
+        timeout = window.setTimeout(() => {
+          stop();
+          status.textContent = "The local scan timed out. Try again.";
+        }, 60000);
+        worker.onerror = () => {
+          if (active !== worker) return;
+          stop();
+          status.textContent = "Could not start the local scanner.";
+        };
+        worker.onmessage = ({ data }) => {
+          if (active !== worker) return;
+          stop();
+          if (data.failed || data.unsupported) {
+            status.textContent = data.unsupported ? "This text contains unsupported characters." : "Could not load or run the local scanner.";
+            return;
+          }
+          for (const finding of data.findings) {
+            const item = document.createElement("li");
+            item.textContent = finding;
+            findings.append(item);
+          }
+          status.textContent = !data.complete ? "Scan incomplete. The findings limit was reached."
+            : data.findings.length ? `Scan complete. Findings: ${data.findings.length}.`
+            : "Scan complete. No matching Unicode or whitespace findings.";
+        };
+        worker.postMessage(input.value);
+      } catch {
+        stop();
+        status.textContent = "Could not start the local scanner.";
       }
     });
   }
