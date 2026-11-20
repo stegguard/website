@@ -69,7 +69,16 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
       return m;
     };
 
+    let lastAccepted = input.value;
+    const encoder = new TextEncoder();
     const render = () => {
+      if (input.value.length > 32768 || encoder.encode(input.value).length > 32768) {
+        input.value = lastAccepted;
+        note.textContent = "Edit rejected. The limit is 32 KiB. Your previous text is still in the field.";
+        return;
+      }
+      lastAccepted = input.value;
+      note.textContent = "Runs in your browser. Limit 32 KiB. Nothing is uploaded.";
       const { segments, findings } = analyze(input.value);
       seen.replaceChildren(
         ...segments.map((s) =>
@@ -113,6 +122,6 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
     );
     input.readOnly = false;
     samples.hidden = false;
-    note.textContent = "Runs in your browser. Nothing is uploaded.";
+    note.textContent = "Runs in your browser. Limit 32 KiB. Nothing is uploaded.";
   });
 </script>

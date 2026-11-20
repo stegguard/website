@@ -38,6 +38,7 @@ jobs:
       - name: Build
         working-directory: stegguard-site
         env:
+          PUBLIC_LIVE_SCAN: ${{ vars.PUBLIC_LIVE_SCAN }}
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
           npm ci

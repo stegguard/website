@@ -1,0 +1,33 @@
+services:
+  scanner:
+    build:
+      context: .
+      additional_contexts:
+        detector: ${STEGGUARD_DIR:?Set the path to the StegGuard checkout}
+    environment:
+      SCAN_ORIGIN: ${SCAN_ORIGIN:?Set the exact public website origin}
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=8m,noexec,nosuid,nodev"]
+    volumes:
+      - socket:/run/scan
+    mem_limit: 192m
+    cpus: 1
+    pids_limit: 16
+  gateway:
+    image: nginxinc/nginx-unprivileged:stable-alpine
+    depends_on: [scanner]
+    ports: ["127.0.0.1:8088:8080"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=8m,noexec,nosuid,nodev"]
+    volumes:
+      - socket:/run/scan:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    mem_limit: 64m
+    pids_limit: 16
+volumes:
+  socket:

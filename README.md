@@ -80,3 +80,41 @@ If `stegguard/stegguard` is private, add a read-only token as the `OSS_REPO_TOKE
 ## Before launch
 
 - The install command and advertised version come from `src/lib/install.ts`. Bump `RELEASE` there (and its test) when a new version is published to [PyPI](https://pypi.org/project/stegguard/).
+
+## Live Python text scan
+
+The optional homepage form sends an explicit POST to the same origin at
+`/api/scan`. GitHub Pages serves the static site. To enable the form, route
+that exact path through your HTTPS edge to the scan gateway on a separate
+container host. Keep `PUBLIC_LIVE_SCAN` unset until the route works.
+
+From this repository, with Docker Compose 2.17+ and the StegGuard checkout
+containing the public `analyze_text` API:
+
+```sh
+export STEGGUARD_DIR=/absolute/path/to/stegguard
+export SCAN_ORIGIN=https://stegguard.com
+docker compose -f scan-service/compose.yaml up --build -d
+```
+
+The gateway binds to host loopback on port 8088. Terminate HTTPS on that host
+or use a private tunnel from the edge. Preserve the browser Origin. At the
+public edge, enforce the 32 KiB body cap before buffering, a total request
+deadline, and per-client rate limiting using the edge's verified client address.
+The inner gateway also limits its immediate peer and total scan traffic.
+Disable body capture, session replay and caching on this route and form.
+Use a fixed replica ceiling if the platform autoscales.
+
+The scanner runs with a read-only root filesystem, a Unix socket, two workers,
+a five-second worker timeout, and no network interface beyond loopback.
+It only receives plain UTF-8, scans in memory, and returns bounded finding
+descriptions. On staging, verify size rejection, overload responses, worker
+recovery and that platform telemetry omits submissions. Then set the website
+repository variable `PUBLIC_LIVE_SCAN=true` and rebuild Pages. Unset the
+variable and rebuild to hide the form. Stop the gateway to close the endpoint.
+
+Run the endpoint regression tests with Python 3.12+:
+
+```sh
+PYTHONPATH="$STEGGUARD_DIR" python -m unittest discover -s scan-service
+```
