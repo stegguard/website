@@ -92,7 +92,8 @@ def main() -> None:
         decoded = json.loads(run(stegguard, work, "decode", f"samples/{WALKTHROUGH}"))
         lines = (work / "samples" / WALKTHROUGH).read_text(encoding="utf-8").splitlines()
         line_no, line = next((i, ln) for i, ln in enumerate(lines, 1) if any(c in ln for c in HIDDEN))
-        sanitized = json.loads(run(stegguard, work, "sanitize", f"samples/{WALKTHROUGH}"))
+        (work / "excerpt.txt").write_text(line + "\n", encoding="utf-8")
+        sanitized = json.loads(run(stegguard, work, "sanitize", "excerpt.txt"))
 
         out_report = SITE / "public" / "demo" / "report.html"
         out_report.parent.mkdir(parents=True, exist_ok=True)
@@ -136,6 +137,7 @@ def main() -> None:
             "decoded": decoded["zero_width"]["decoded"],
             "confidence": decoded["zero_width"]["confidence"],
             "occurrences": decoded["zero_width"]["occurrences"],
+            "sanitization_status": sanitized["sanitization_status"],
             "changes": sanitized["changes"],
             "original_preserved": sanitized["original_preserved"],
             "sanitized_path": posix(sanitized["sanitized_path"]).removeprefix("samples/"),

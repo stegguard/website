@@ -3,12 +3,13 @@ import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import Specimen from "../components/Specimen.astro";
 import { segment } from "../lib/reveal";
-import { pipInstall } from "../lib/install";
+import { PACKAGE } from "../lib/install";
 import blog from "../data/blog.json";
 
 // Every output block on this page comes from src/data/blog.json, which
 // scripts/build_blog.py writes by running the real CLI on files it generates.
 const b = blog;
+const installCommand = `pip install ${PACKAGE}==${b.stegguard_version}`;
 
 type Detect = { lines: string[]; exit: number };
 const detectLines = (file: string, d: Detect) => [
@@ -68,7 +69,7 @@ const stateClass: Record<string, string> = { yes: "clean", partial: "medium", no
 const ciSnippet = [
   "- name: Scan for hidden content",
   "  run: |",
-  `    ${pipInstall()}`,
+  `    ${installCommand}`,
   "    stegguard detect . -r --json findings.json",
 ];
 ---
@@ -81,6 +82,7 @@ const ciSnippet = [
     <main id="content" class="docs__main">
       <p class="crumb"><a href="/">StegGuard</a> <span aria-hidden="true">/</span> Blog</p>
       <h1>The invisible attack surface</h1>
+      <p>This walkthrough records StegGuard 0.5.0. Its source-file and image rewrites apply to that release. The development version limits sanitization to validated plain text. <a href="/docs#formats">See file support by operation.</a></p>
       <p class="post-sub">Twelve ways to hide a payload, and what StegGuard does about each</p>
       <p class="post-meta">
         <time datetime={b.generated}>{long}</time>
@@ -117,7 +119,7 @@ const ciSnippet = [
         Some of these come from published research, and some from malware found on npm and Open
         VSX; the sections below link the reports. For each one we show the attack, then what a developer actually gets from{" "}
         <code>stegguard detect</code>, <code>decode</code> and <code>sanitize</code>. Install it
-        with <code>{pipInstall()}</code> and the samples run on your machine too.
+        with <code>{installCommand}</code> and the samples run on your machine too.
       </p>
       <p>
         <strong>Detect</strong> tells you a file is carrying

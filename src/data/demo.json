@@ -70,6 +70,7 @@
       "line_endings_normalized": 0
     },
     "original_preserved": true,
-    "sanitized_path": "release_notes.sanitized.md"
+    "sanitized_path": "excerpt.sanitized.txt",
+    "sanitization_status": "SANITIZED"
   }
 }

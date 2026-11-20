@@ -96,12 +96,32 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
       const root = document.documentElement;
       const toggle = document.getElementById("theme");
       const sync = () => toggle?.setAttribute("aria-pressed", String(root.dataset.theme === "light"));
-      toggle?.addEventListener("click", () => {
+      const switchTheme = () => {
         root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
         try {
           localStorage.setItem("theme", root.dataset.theme);
         } catch {}
         sync();
+      };
+      toggle?.addEventListener("click", () => {
+        if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          switchTheme();
+          return;
+        }
+
+        const { left, top, width, height } = toggle.getBoundingClientRect();
+        const x = left + width / 2;
+        const y = top + height / 2;
+        const maxRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        const transition = document.startViewTransition(switchTheme);
+        void transition.ready.then(() => {
+          root.animate(
+            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`] },
+            { pseudoElement: "::view-transition-new(root)", duration: 500, easing: "ease-in-out" },
+          );
+        }).catch(() => {
+          // A skipped or superseded transition still runs the theme update.
+        });
       });
       sync();
 

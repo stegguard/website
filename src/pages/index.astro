@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import CodeBlock from "../components/CodeBlock.astro";
+import FormatStrip from "../components/FormatStrip.astro";
 import Sandbox from "../components/Sandbox.astro";
 import Integrations from "../components/Integrations.astro";
 import demo from "../data/demo.json";
@@ -16,7 +17,7 @@ const steps = [
     title: "Point it at a file or a whole repo.",
     caption: "Runs on the standard library, with no network calls. It exits with 1 when something is flagged, so CI can fail the build.",
     lines: [
-      { t: "cmd", s: "$ stegguard detect report.md" },
+      { t: "cmd", s: "$ stegguard detect report.txt" },
       { t: "out", s: "  • 16 zero-width characters found" },
       { t: "out", s: "  • 1 suspicious control character(s) found" },
       { t: "hit", s: "⚠ 1/1 file(s) flagged" },
@@ -27,7 +28,7 @@ const steps = [
     title: "Read the hidden message without touching the file.",
     caption: "The result is JSON, with a confidence score for each channel.",
     lines: [
-      { t: "cmd", s: "$ stegguard decode report.md" },
+      { t: "cmd", s: "$ stegguard decode report.txt" },
       { t: "hit", s: '  "decoded": "hi",' },
       { t: "out", s: '  "confidence": 0.9,' },
       { t: "out", s: '  "occurrences": 16' },
@@ -35,10 +36,10 @@ const steps = [
   },
   {
     verb: "Sanitize",
-    title: "Get a clean copy and a record of what changed.",
-    caption: "The copy goes to report.sanitized.md by default. Overwriting the original takes --in-place and --confirm together.",
+    title: "Write a plain-text copy and review the changes.",
+    caption: "The copy goes to report.sanitized.txt by default. Overwriting the original takes --in-place and --confirm together.",
     lines: [
-      { t: "cmd", s: "$ stegguard sanitize report.md" },
+      { t: "cmd", s: "$ stegguard sanitize report.txt" },
       { t: "out", s: '  "zero_width_removed": 16,' },
       { t: "out", s: '  "bidi_removed": 1,' },
       { t: "hit", s: '  "original_preserved": true' },
@@ -87,19 +88,24 @@ const useCases = [
 <Layout>
   <main id="content">
     <section class="hero wrap">
-      <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
-      <h1>Your text has characters you can't see.</h1>
-      <p class="lede">
-        StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
-        channels and watermark signals. If it finds a hidden message it can decode it, and it
-        writes a clean copy without touching your original. Python standard library only, offline
-        by default.
-      </p>
-      <p class="hero__actions">
-        <a class="btn btn--solid" href="#install">Install StegGuard</a>
-        <a class="btn" href="/demo">See it run on {countWord(demo.total_files)} sample files</a>
-        <a class="btn btn--ghost" href="/docs">CLI reference</a>
-      </p>
+      <div class="hero__intro">
+        <div>
+          <p class="eyebrow">Open source · <a href={PYPI_URL}>v{RELEASE} on PyPI</a> · Apache-2.0 · alpha</p>
+          <h1>Your text has characters you can't see.</h1>
+          <p class="lede">
+            StegGuard finds them. It scans files for zero-width characters, homoglyphs, whitespace
+            channels and watermark signals. If it finds a hidden message it can decode it, and it
+            can remove hidden characters from plain text while preserving your original. Python standard library only, offline
+            by default.
+          </p>
+          <p class="hero__actions">
+            <a class="btn btn--solid" href="#install">Install StegGuard</a>
+            <a class="btn" href="/demo">See it run on {countWord(demo.total_files)} sample files</a>
+            <a class="btn btn--ghost" href="/docs">CLI reference</a>
+          </p>
+        </div>
+        <img class="hero__banner" src="/images/steg_banner.png" width="630" height="276" alt="StegGuard — Uncovering hidden data" />
+      </div>
 
       <Sandbox />
 
@@ -111,14 +117,14 @@ const useCases = [
     <section class="steps wrap" id="how-it-works" aria-labelledby="steps-h">
       <span class="section-num">01 / How it works</span>
       <h2 id="steps-h">One workflow instead of several one-off tools.</h2>
-      <p class="section-lede">Detect, decode, then sanitize a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
+      <p class="section-lede">This example scans a plain-text file, reads its hidden message and removes the hidden characters from a copy. Your original stays as it is unless you ask for an in-place rewrite.</p>
       <ol class="steps__list">
         {steps.map((step, i) => (
           <li class="step" id={step.verb.toLowerCase()}>
             <div class="step__text">
               <p class="step__num">0{i + 1} / {step.verb}</p>
               <h3>{step.title}</h3>
-              <p>{step.caption.split(/(--[a-z-]+|report\.sanitized\.md)/).map((part, j) => j % 2 ? <code>{part}</code> : part)}</p>
+              <p>{step.caption.split(/(--[a-z-]+|report\.sanitized\.txt)/).map((part, j) => j % 2 ? <code>{part}</code> : part)}</p>
             </div>
             <CodeBlock label={`stegguard ${step.verb.toLowerCase()}`} lines={[...step.lines]} />
           </li>
@@ -131,6 +137,7 @@ const useCases = [
     <section class="wrap" id="detects" aria-labelledby="detects-h">
       <span class="section-num">03 / Coverage</span>
       <h2 id="detects-h">Hidden content rarely comes in one neat format.</h2>
+      <FormatStrip />
       <div class="caps">
         {specs.map((c) => (
           <article class="cap">

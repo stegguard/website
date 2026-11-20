@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Docs live in the sibling stegguard-oss package; Astro runs from the project root.
-const DOCS_DIR = join(process.cwd(), "..", "stegguard-oss", "docs");
+const DOCS_DIR = process.env.STEGGUARD_DOCS_DIR ?? join(process.cwd(), "..", "stegguard-oss", "docs");
 
 /** Read a markdown file from ../stegguard-oss/docs, failing the build with a clear error. */
 export function readDoc(name: string): string {
@@ -12,7 +12,7 @@ export function readDoc(name: string): string {
   } catch (err) {
     throw new Error(
       `Docs source missing: could not read ${path}. ` +
-        `The site derives its tables from ../stegguard-oss/docs. (${(err as Error).message})`,
+        `Set STEGGUARD_DOCS_DIR to the StegGuard docs directory. (${(err as Error).message})`,
     );
   }
 }

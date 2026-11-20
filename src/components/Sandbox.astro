@@ -23,18 +23,19 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
 <section class="sandbox" data-sandbox aria-labelledby="sandbox-label">
   <div class="sandbox__input">
     <label id="sandbox-label" class="sandbox__label" for="sandbox-text">Text to check</label>
-    <textarea id="sandbox-text" class="sandbox__text" rows="4" spellcheck="false" autocomplete="off">{initial.text}</textarea>
+    <textarea id="sandbox-text" class="sandbox__text" rows="4" spellcheck="false" autocomplete="off" aria-describedby="sandbox-note" readonly>{initial.text}</textarea>
     <div class="sandbox__bar">
       <div class="sandbox__samples" role="group" aria-label="Sample text" hidden>
         {SAMPLES.map((s) => (
           <button type="button" class="sandbox__sample" data-sample={s.text} aria-pressed={s.id === initial.id ? "true" : "false"}>{s.label}</button>
         ))}
       </div>
-      <p class="sandbox__privacy">Runs in your browser. Nothing is uploaded.</p>
+      <p id="sandbox-note" class="sandbox__privacy">Read-only sample. Enable JavaScript to check your own text.</p>
     </div>
   </div>
 
-  <div class="sandbox__result" aria-live="polite">
+  <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-summary></p>
+  <div class="sandbox__result">
     <p class="sandbox__head">What StegGuard sees</p>
     <p class="sandbox__seen" data-seen>{segments.map((s) => s.kind === "text" ? s.text : s.kind === "glyph" ? <mark class={chipClass(s)} title={s.label}>{s.char}</mark> : <mark class={chipClass(s)}>{s.label}</mark>)}</p>
     <ul class="sandbox__findings" data-findings>
@@ -54,9 +55,11 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
     const seen = root.querySelector<HTMLElement>("[data-seen]")!;
     const list = root.querySelector<HTMLElement>("[data-findings]")!;
     const clean = root.querySelector<HTMLElement>("[data-clean]")!;
+    const summary = root.querySelector<HTMLElement>("[data-summary]")!;
+    const note = root.querySelector<HTMLElement>("#sandbox-note")!;
     const samples = root.querySelector<HTMLElement>(".sandbox__samples")!;
     const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".sandbox__sample"));
-    samples.hidden = false;
+    let announcementTimer: number | undefined;
 
     const chip = (cls: string, text: string, title?: string) => {
       const m = document.createElement("mark");
@@ -88,6 +91,17 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
       clean.hidden = findings.length > 0 || isEmpty;
       if (isEmpty) seen.textContent = "Type or paste some text above.";
       buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sample === input.value)));
+
+      const count = findings.length;
+      const announcement = isEmpty
+        ? "No text to check."
+        : count === 0
+          ? "Nothing hidden found."
+          : `${count} ${count === 1 ? "finding" : "findings"}.`;
+      window.clearTimeout(announcementTimer);
+      announcementTimer = window.setTimeout(() => {
+        if (summary.textContent !== announcement) summary.textContent = announcement;
+      }, 400);
     };
 
     input.addEventListener("input", render);
@@ -97,5 +111,8 @@ const chipClass = (s: Segment) => (s.kind === "glyph" ? "hid hid--glyph" : `hid 
         render();
       }),
     );
+    input.readOnly = false;
+    samples.hidden = false;
+    note.textContent = "Runs in your browser. Nothing is uploaded.";
   });
 </script>

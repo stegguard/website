@@ -9,15 +9,15 @@ const imagesCmd = pipInstall("images");
 
 const commands = [
   { name: "stegguard detect", exits: "0 / 1 / 2", detail: "Scans files or directories for hidden content." },
-  { name: "stegguard decode", exits: "0 / 2", detail: "Pulls out hidden payloads it recognizes in text, without changing the input." },
-  { name: "stegguard sanitize", exits: "0 / 2", detail: "Writes a cleaned copy and lists every change it made." },
+  { name: "stegguard decode", exits: "0 / 2", detail: "Pulls out hidden payloads it recognizes in supported text, metadata and image pixels." },
+  { name: "stegguard sanitize", exits: "0 / 2", detail: "Writes a copy by default and reports the changes." },
   { name: "stegguard watermark", exits: "0 / 2", detail: "Looks for watermark, fingerprint and provenance evidence, including C2PA." },
 ];
 
 const exitCodes = [
-  { code: "0", meaning: "The scan finished and nothing was flagged." },
+  { code: "0", meaning: "Detect completed with no flagged files. Decode and watermark completed and may report findings. Sanitize wrote output. Check sanitization_status for a partial rewrite." },
   { code: "1", meaning: "The scan finished and found something. Only detect uses this code." },
-  { code: "2", meaning: "Bad arguments, or the scan could not finish (for example, a resource limit was hit)." },
+  { code: "2", meaning: "Invalid arguments or an incomplete or failed operation, including a rejected sanitize request." },
 ];
 
 // Resource limits and platform support are derived from the stegguard-oss docs at build time.
@@ -38,6 +38,7 @@ const platforms = parseMarkdownTable(readDoc("platform-support.md"), "Validation
 const toc = [
   { id: "install", label: "Install" },
   { id: "commands", label: "Commands" },
+  { id: "formats", label: "File support" },
   { id: "exit-codes", label: "Exit codes" },
   { id: "limits", label: "Resource limits" },
   { id: "platforms", label: "Platform support" },
@@ -80,6 +81,22 @@ const toc = [
           </li>
         ))}
       </ul>
+
+      <h2 id="formats"><a class="anchor" href="#formats">File support in the development version</a></h2>
+      <p>These capabilities describe changes since the 0.5.0 release.</p>
+      <div class="table-scroll"><table class="spec">
+        <thead><tr><th scope="col">Operation</th><th scope="col">Inputs and coverage</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Detect</th><td>Text, source, documents, archives and media. Binary files can receive a generic byte-pattern scan. Check <code>inspection_status</code> and <code>checks_run</code> for the inspection performed.</td></tr>
+          <tr><th scope="row">Decode text</th><td>Validated text, configuration and source files, including extensionless text. Supports UTF-8 and BOM-marked UTF-16.</td></tr>
+          <tr><th scope="row">Decode metadata</th><td>PNG, JPEG, GIF, TIFF, MP3, PDF, ZIP, JAR, APK, DOCX, XLSX, ODT and ODS with readable metadata.</td></tr>
+          <tr><th scope="row">Decode pixel LSBs</th><td>PNG, BMP, GIF and TIFF. Looks for readable text starting at the first pixel sample.</td></tr>
+          <tr><th scope="row">Sanitize</th><td>Validated plain-text <code>.txt</code> and <code>.log</code> files in UTF-8 or BOM-marked UTF-16.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Read <code>sanitization_status</code> and <code>warnings</code> in the JSON output.
+        <code>SANITIZED</code> and <code>PARTIAL</code> exit with 0. A partial rewrite leaves changes available through other text channels.
+        <code>NOT_SUPPORTED</code> and <code>VALIDATION_FAILED</code> preserve the original and exit with 2.</p>
 
       <h2 id="exit-codes"><a class="anchor" href="#exit-codes">Exit codes</a></h2>
       <aside class="callout callout--note">
@@ -129,6 +146,7 @@ const toc = [
       </div>
 
       <h2 id="more"><a class="anchor" href="#more">More in the repo</a></h2>
+      <p>The development version’s detection baseline covers 38 synthetic fixtures. It flagged all 16 planted cases and returned clean results for all 22 benign files. Every scan completed.</p>
       <div class="cards">
         <a class="card" href="https://github.com/stegguard/stegguard/blob/main/docs/compatibility.md">
           <span class="card__title">Compatibility policy</span>

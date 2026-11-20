@@ -33,7 +33,8 @@ const decodeLines = [
   { t: "out" as const, s: "  }," },
 ];
 const sanitizeLines = [
-  { t: "cmd" as const, s: `$ stegguard sanitize ${w.file}` },
+  { t: "cmd" as const, s: `$ stegguard sanitize excerpt.txt` },
+  { t: "out" as const, s: `  "sanitization_status": "${w.sanitization_status}",` },
   { t: "hit" as const, s: `  "zero_width_removed": ${w.changes.zero_width_removed},` },
   { t: "out" as const, s: `  "bidi_removed": ${w.changes.bidi_removed},` },
   { t: "out" as const, s: `  "homoglyphs_replaced": ${w.changes.homoglyphs_replaced},` },
@@ -55,8 +56,7 @@ const toc = [
       <h1>{capitalize(n)} sample files, one hidden sentence</h1>
       <p class="lede">
         We ran StegGuard {demo.stegguard_version} over {demo.total_files} sample files.
-        It flagged {demo.flagged_files} of them. Every number and line of output below comes from that run,
-        and the files are in <a href={samplesRepo}>stegguard/samples</a> so you can run it yourself.
+        It flagged {demo.flagged_files} of them. The scan report and detection and decoding excerpts come from that run. The files are in <a href={samplesRepo}>stegguard/samples</a> so you can run it yourself.
       </p>
 
       <details class="toc-inline">
@@ -82,7 +82,7 @@ const toc = [
       <CodeBlock label="stegguard decode (excerpt)" lines={decodeLines} />
 
       <h3>Sanitize</h3>
-      <p>The clean copy goes to <code>{w.sanitized_path}</code>. The original is not touched.</p>
+      <p>For this step we saved the displayed line in <code>excerpt.txt</code> and ran the development version. It wrote the result to <code>{w.sanitized_path}</code>. The original is not touched.</p>
       <CodeBlock label="stegguard sanitize (excerpt)" lines={sanitizeLines} />
 
       <h2 id="files"><a class="anchor" href="#files">All {n} files</a></h2>

@@ -1,0 +1,38 @@
+name: Website CI
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Website tests and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stegguard-site
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: stegguard-site
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: stegguard/stegguard
+          path: stegguard-oss
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: stegguard-site/.nvmrc
+          cache: npm
+          cache-dependency-path: stegguard-site/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
